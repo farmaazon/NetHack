@@ -2130,7 +2130,7 @@ struct obj *otmp;
     otmp->in_use = TRUE; /* in case losehp() is fatal */
     pline("%s suddenly explodes!", The(xname(otmp)));
     dmg = d(otmp->spe + 2, 6);
-    losehp(Maybe_Half_Phys(dmg), "exploding wand", KILLED_BY_AN);
+    losehp(Maybe_Half_Phys(dmg), "exploding wand", KILLED_BY_AN, NONE_RES);
     useup(otmp);
 }
 
@@ -2164,11 +2164,12 @@ dozap()
         /* make him pay for knowing !NODIR */
     } else if (!u.dx && !u.dy && !u.dz
                && !(objects[obj->otyp].oc_dir == NODIR)) {
-        if ((damage = zapyourself(obj, TRUE)) != 0) {
+        uchar res_type;
+        if ((damage = zapyourself(obj, TRUE, &res_type)) != 0) {
             char buf[BUFSZ];
 
             Sprintf(buf, "zapped %sself with a wand", uhim());
-            losehp(Maybe_Half_Phys(damage), buf, NO_KILLER_PREFIX);
+            losehp(Maybe_Half_Phys(damage), buf, NO_KILLER_PREFIX, res_type);
         }
     } else {
         /*      Are we having fun yet?
@@ -2191,12 +2192,18 @@ dozap()
 }
 
 int
-zapyourself(obj, ordinary)
+zapyourself(obj, ordinary, res_type_out)
 struct obj *obj;
 boolean ordinary;
+uchar *res_type_out;
 {
+    uchar drop;
     boolean learn_it = FALSE;
     int damage = 0;
+
+    if (!res_type_out)
+        res_type_out = &drop;
+    *res_type_out = NONE_RES;
 
     switch (obj->otyp) {
     case WAN_STRIKING:
@@ -2221,6 +2228,7 @@ boolean ordinary;
             You("shock yourself!");
             damage = d(12, 6);
             exercise(A_CON, FALSE);
+            *res_type_out = SHOCK_RES;
         } else {
             shieldeff(u.ux, u.uy);
             You("zap yourself, but seem unharmed.");
@@ -2245,6 +2253,7 @@ boolean ordinary;
         } else {
             pline("You've set yourself afire!");
             damage = d(12, 6);
+            *res_type_out = FIRE_RES;
         }
         burn_away_slime();
         (void) burnarmor(&youmonst);
@@ -2265,6 +2274,7 @@ boolean ordinary;
         } else {
             You("imitate a popsicle!");
             damage = d(12, 6);
+            *res_type_out = COLD_RES;
         }
         destroy_item(POTION_CLASS, AD_COLD);
         break;
@@ -2295,9 +2305,10 @@ boolean ordinary;
         break;
 
     case SPE_DRAIN_LIFE:
-        if (!Drain_resistance) {
+        if (!Drain_resistance && rnd(100) > u.uperc_props[DRAIN_RES]) {
             learn_it = TRUE; /* (no effect for spells...) */
             losexp("life drainage");
+            train_perc_prop(3, DRAIN_RES);
         }
         damage = 0; /* No additional damage */
         break;
@@ -2346,7 +2357,9 @@ boolean ordinary;
             You("don't feel sleepy!");
         } else {
             pline_The("sleep ray hits you!");
-            fall_asleep(-rnd(50), TRUE);
+            register int length = scale_dmg(rnd(50), SLEEP_RES);
+            fall_asleep(-length, TRUE);
+            train_perc_prop(length, SLEEP_RES);
         }
         break;
 
@@ -2542,7 +2555,7 @@ int amt;          /* pseudo-damage used to determine blindness duration */
         Sprintf(buf, "%s %sself with %s", ordinary ? "zapped" : "blasted",
                 uhim(), how);
         /* might rehumanize(); could be fatal, but only for Unchanging */
-        losehp(Maybe_Half_Phys(dmg), buf, NO_KILLER_PREFIX);
+        losehp(Maybe_Half_Phys(dmg), buf, NO_KILLER_PREFIX, NONE_RES);
     }
     return dmg;
 }
@@ -2765,7 +2778,7 @@ struct obj *obj; /* wand or spell */
             pline("A rock is dislodged from the %s and falls on your %s.",
                   ceiling(x, y), body_part(HEAD));
             dmg = rnd((uarmh && is_metallic(uarmh)) ? 2 : 6);
-            losehp(Maybe_Half_Phys(dmg), "falling rock", KILLED_BY_AN);
+            losehp(Maybe_Half_Phys(dmg), "falling rock", KILLED_BY_AN, NONE_RES);
             if ((otmp = mksobj_at(ROCK, x, y, FALSE, FALSE)) != 0) {
                 (void) xname(otmp); /* set dknown, maybe bknown */
                 stackobj(otmp);
@@ -3624,6 +3637,7 @@ const char *fltxt;
 xchar sx, sy;
 {
     int dam = 0, abstyp = abs(type);
+    uchar res_type = NONE_RES;
 
     switch (abstyp % 10) {
     case ZT_MAGIC_MISSILE:
@@ -3641,6 +3655,7 @@ xchar sx, sy;
             You("don't feel hot!");
             ugolemeffects(AD_FIRE, d(nd, 6));
         } else {
+            res_type = FIRE_RES;
             dam = d(nd, 6);
         }
         burn_away_slime();
@@ -3660,6 +3675,7 @@ xchar sx, sy;
             You("don't feel cold.");
             ugolemeffects(AD_COLD, d(nd, 6));
         } else {
+            res_type = COLD_RES;
             dam = d(nd, 6);
         }
         if (!rn2(3))
@@ -3670,7 +3686,9 @@ xchar sx, sy;
             shieldeff(u.ux, u.uy);
             You("don't feel sleepy.");
         } else {
+            register int sleep_time = scale_dmg(d(nd, 25), SLEEP_RES);
             fall_asleep(-d(nd, 25), TRUE); /* sleep ray */
+            train_perc_prop(sleep_time, SLEEP_RES);
         }
         break;
     case ZT_DEATH:
@@ -3678,16 +3696,19 @@ xchar sx, sy;
             if (Disint_resistance) {
                 You("are not disintegrated.");
                 break;
-            } else if (uarms) {
+            }  else if (uarms && u.uperc_props[DISINT_RES] < 50) {
                 /* destroy shield; other possessions are safe */
                 (void) destroy_arm(uarms);
                 break;
-            } else if (uarm) {
+            } else if (uarm && u.uperc_props[DISINT_RES] < 30) {
                 /* destroy suit; if present, cloak goes too */
                 if (uarmc)
                     (void) destroy_arm(uarmc);
                 (void) destroy_arm(uarm);
                 break;
+            } else if (u.uperc_props[DISINT_RES] > 0) {
+                dam = scale_dmg(u.uhp, DISINT_RES);
+                res_type = DISINT_RES;
             }
             /* no shield or suit, you're dead; wipe out cloak
                and/or shirt in case of life-saving or bones */
@@ -3718,6 +3739,7 @@ xchar sx, sy;
         } else {
             dam = d(nd, 6);
             exercise(A_CON, FALSE);
+            res_type = SHOCK_RES;
         }
         if (!rn2(3))
             destroy_item(WAND_CLASS, AD_ELEC);
@@ -3735,6 +3757,7 @@ xchar sx, sy;
             pline_The("%s burns!", hliquid("acid"));
             dam = d(nd, 6);
             exercise(A_STR, FALSE);
+            res_type = ACID_RES;
         }
         /* using two weapons at once makes both of them more vulnerable */
         if (!rn2(u.twoweap ? 3 : 6))
@@ -3750,7 +3773,7 @@ xchar sx, sy;
        including hero's own ricochets; breath attacks do full damage */
     if (dam && Half_spell_damage && !(abstyp >= 20 && abstyp <= 29))
         dam = (dam + 1) / 2;
-    losehp(dam, fltxt, KILLED_BY_AN);
+    losehp(dam, fltxt, KILLED_BY_AN, res_type);
     return;
 }
 
@@ -4643,6 +4666,7 @@ register int osym, dmgtyp;
 {
     register struct obj *obj, *obj2;
     int dmg, xresist, skip;
+    int res_type;
     long i, cnt, quan;
     int dindx;
     const char *mult;
@@ -4658,6 +4682,7 @@ register int osym, dmgtyp;
         if (obj->in_use && obj->quan == 1L)
             continue; /* not available */
         xresist = skip = 0;
+        res_type = NONE_RES;
         /* lint suppression */
         dmg = dindx = 0;
         quan = 0L;
@@ -4692,10 +4717,12 @@ register int osym, dmgtyp;
             case SCROLL_CLASS:
                 dindx = 3;
                 dmg = 1;
+                res_type = FIRE_RES;
                 break;
             case SPBOOK_CLASS:
                 dindx = 4;
                 dmg = 1;
+                res_type = FIRE_RES;
                 break;
             case FOOD_CLASS:
                 if (obj->otyp == GLOB_OF_GREEN_SLIME) {
@@ -4732,6 +4759,7 @@ register int osym, dmgtyp;
 #endif
                 dindx = 6;
                 dmg = rnd(10);
+                res_type = SHOCK_RES;
                 break;
             default:
                 skip++;
@@ -4785,7 +4813,7 @@ register int osym, dmgtyp;
                     if (physical_damage)
                         dmg = Maybe_Half_Phys(dmg);
                     losehp(dmg, one ? how : (const char *) makeplural(how),
-                           one ? KILLED_BY_AN : KILLED_BY);
+                           one ? KILLED_BY_AN : KILLED_BY, res_type);
                     exercise(A_STR, FALSE);
                 }
             }

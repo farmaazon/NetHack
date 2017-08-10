@@ -103,15 +103,11 @@ boolean pushing;
                 vision_full_recalc = 1;
                 You("find yourself on dry land again!");
             } else if (lava && distu(rx, ry) <= 2) {
-                int dmg;
                 You("are hit by molten %s%c",
                     hliquid("lava"), Fire_resistance ? '.' : '!');
                 burn_away_slime();
-                dmg = d((Fire_resistance ? 1 : 3), 6);
-                dmg = scale_dmg(dmg, FIRE_RES);
-                losehp(Maybe_Half_Phys(dmg), /* lava damage */
-                       "molten lava", KILLED_BY);
-                train_perc_prop(dmg, FIRE_RES);
+                losehp(Maybe_Half_Phys(d((Fire_resistance ? 1 : 3), 6)), /* lava damage */
+                       "molten lava", KILLED_BY, FIRE_RES);
             } else if (!fills_up && flags.verbose
                        && (pushing ? !Blind : cansee(rx, ry)))
                 pline("It sinks without a trace!");
@@ -167,7 +163,7 @@ const char *verb;
             } else {
                 if (!Passes_walls && !throws_rocks(youmonst.data)) {
                     losehp(Maybe_Half_Phys(rnd(15)),
-                           "squished under a boulder", NO_KILLER_PREFIX);
+                           "squished under a boulder", NO_KILLER_PREFIX, NONE_RES);
                     return FALSE; /* player remains trapped */
                 } else
                     u.utrap = 0;
@@ -1362,7 +1358,7 @@ boolean at_stairs, falling, portal;
                     losehp(Maybe_Half_Phys(rnd(3)),
                            at_ladder ? "falling off a ladder"
                                      : "tumbling down a flight of stairs",
-                           KILLED_BY);
+                           KILLED_BY, NONE_RES);
                 selftouch("Falling, you");
             } else { /* ordinary descent */
                 if (flags.verbose)

@@ -387,7 +387,7 @@ int force;
                             u.utrap = rn1(6, 2);
                             u.utraptype = TT_PIT;
                             losehp(Maybe_Half_Phys(rnd(6)),
-                                   "fell into a chasm", NO_KILLER_PREFIX);
+                                   "fell into a chasm", NO_KILLER_PREFIX, NONE_RES);
                             selftouch("Falling, you");
                         } else if (u.utrap && u.utraptype == TT_PIT) {
                             boolean keepfooting =
@@ -398,7 +398,7 @@ int force;
                             u.utrap = rn1(6, 2);
                             u.utraptype = TT_PIT; /* superfluous */
                             losehp(Maybe_Half_Phys(rnd(keepfooting ? 2 : 4)),
-                                   "hurt in a chasm", NO_KILLER_PREFIX);
+                                   "hurt in a chasm", NO_KILLER_PREFIX, NONE_RES);
                             if (keepfooting)
                                 exercise(A_DEX, TRUE);
                             else
@@ -509,11 +509,12 @@ struct obj *instr;
                 pline("%s.", Tobjnam(instr, "vibrate"));
                 break;
             } else if (!u.dx && !u.dy && !u.dz) {
-                if ((damage = zapyourself(instr, TRUE)) != 0) {
+                uchar res_type;
+                if ((damage = zapyourself(instr, TRUE, &res_type)) != 0) {
                     char buf[BUFSZ];
 
                     Sprintf(buf, "using a magical horn on %sself", uhim());
-                    losehp(damage, buf, KILLED_BY); /* fire or frost damage */
+                    losehp(damage, buf, KILLED_BY, res_type); /* fire or frost damage */
                 }
             } else {
                 buzz((instr->otyp == FROST_HORN) ? AD_COLD - 1 : AD_FIRE - 1,

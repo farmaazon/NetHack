@@ -512,7 +512,7 @@ int curse_bless;
                 Ring_gone(obj);
             s = rnd(3 * abs(obj->spe)); /* amount of damage */
             useup(obj);
-            losehp(Maybe_Half_Phys(s), "exploding ring", KILLED_BY_AN);
+            losehp(Maybe_Half_Phys(s), "exploding ring", KILLED_BY_AN, NONE_RES);
         } else {
             long mask = is_on ? (obj == uleft ? LEFT_RING : RIGHT_RING) : 0L;
 
@@ -1573,7 +1573,7 @@ struct obj *sobj; /* scroll, or fake spellbook object for scroll-like spell */
             } else {
                 pline_The("scroll catches fire and you burn your %s.",
                           makeplural(body_part(HAND)));
-                losehp(1, "scroll of fire", KILLED_BY_AN);
+                losehp(1, "scroll of fire", KILLED_BY_AN, FIRE_RES);
             }
             break;
         }
@@ -1699,7 +1699,7 @@ boolean confused, helmet_protects, byu, skip_uswallow;
         newsym(u.ux, u.uy);
     }
     if (dmg)
-        losehp(Maybe_Half_Phys(dmg), "scroll of earth", KILLED_BY_AN);
+        losehp(Maybe_Half_Phys(dmg), "scroll of earth", KILLED_BY_AN, NONE_RES);
 }
 
 boolean
@@ -1816,7 +1816,7 @@ int chg; /* recharging */
     dmg = d(n, k);
     obj->in_use = TRUE; /* in case losehp() is fatal (or --More--^C) */
     pline("%s %s explodes!", Yname2(obj), expl);
-    losehp(Maybe_Half_Phys(dmg), "exploding wand", KILLED_BY_AN);
+    losehp(Maybe_Half_Phys(dmg), "exploding wand", KILLED_BY_AN, NONE_RES);
     useup(obj);
     /* obscure side-effect */
     exercise(A_STR, FALSE);

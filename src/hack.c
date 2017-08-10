@@ -538,14 +538,14 @@ dosinkfall()
         ELevitation = HLevitation = 0L;
         You("crash to the floor!");
         dmg = rn1(8, 25 - (int) ACURR(A_CON));
-        losehp(Maybe_Half_Phys(dmg), fell_on_sink, NO_KILLER_PREFIX);
+        losehp(Maybe_Half_Phys(dmg), fell_on_sink, NO_KILLER_PREFIX, NONE_RES);
         exercise(A_DEX, FALSE);
         selftouch("Falling, you");
         for (obj = level.objects[u.ux][u.uy]; obj; obj = obj->nexthere)
             if (obj->oclass == WEAPON_CLASS || is_weptool(obj)) {
                 You("fell on %s.", doname(obj));
                 losehp(Maybe_Half_Phys(rnd(3)), fell_on_sink,
-                       NO_KILLER_PREFIX);
+                       NO_KILLER_PREFIX, NONE_RES);
                 exercise(A_CON, FALSE);
             }
         ELevitation = save_ELev;
@@ -2814,11 +2814,13 @@ maybe_wail()
 }
 
 void
-losehp(n, knam, k_format)
+losehp(n, knam, k_format, res_type)
 register int n;
 register const char *knam;
+uchar res_type;
 boolean k_format;
 {
+    n = scale_dmg(n, res_type);
     if (Upolyd) {
         u.mh -= n;
         if (u.mhmax < u.mh)
@@ -2826,8 +2828,11 @@ boolean k_format;
         context.botl = 1;
         if (u.mh < 1)
             rehumanize();
-        else if (n > 0 && u.mh * 10 < u.mhmax && Unchanging)
-            maybe_wail();
+        else {
+            if (n > 0 && u.mh * 10 < u.mhmax && Unchanging)
+                maybe_wail();
+            train_perc_prop(n, res_type);
+        }
         return;
     }
 
@@ -2843,8 +2848,10 @@ boolean k_format;
             Strcpy(killer.name, knam ? knam : "");
         You("die...");
         done(DIED);
-    } else if (n > 0 && u.uhp * 10 < u.uhpmax) {
-        maybe_wail();
+    } else {
+        if (n > 0 && u.uhp * 10 < u.uhpmax)
+            maybe_wail();
+        train_perc_prop(n, res_type);
     }
 }
 

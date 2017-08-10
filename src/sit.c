@@ -90,7 +90,7 @@ dosit()
                 if (trap && trap->ttyp == SPIKED_PIT) {
                     You("sit down on a spike.  Ouch!");
                     losehp(Half_physical_damage ? rn2(2) : 1,
-                           "sitting on an iron spike", KILLED_BY);
+                           "sitting on an iron spike", KILLED_BY, NONE_RES);
                     exercise(A_STR, FALSE);
                 } else
                     You("sit down in the pit.");
@@ -105,7 +105,7 @@ dosit()
                     burn_away_slime();
                 u.utrap += rnd(4);
                 losehp(d(2, 10), "sitting in lava",
-                       KILLED_BY); /* lava damage */
+                       KILLED_BY, NONE_RES); /* lava damage */
             } else if (u.utraptype == TT_INFLOOR
                        || u.utraptype == TT_BURIEDBALL) {
                 You_cant("maneuver to sit!");
@@ -149,7 +149,7 @@ dosit()
         }
         pline_The("%s burns you!", hliquid("lava"));
         losehp(d((Fire_resistance ? 2 : 10), 10), /* lava damage */
-               "sitting on lava", KILLED_BY);
+               "sitting on lava", KILLED_BY, FIRE_RES);
     } else if (is_ice(u.ux, u.uy)) {
         You(sit_message, defsyms[S_ice].explanation);
         if (!Cold_resistance)
@@ -162,7 +162,7 @@ dosit()
             switch (rnd(13)) {
             case 1:
                 (void) adjattrib(rn2(A_MAX), -rn1(4, 3), FALSE);
-                losehp(rnd(10), "cursed throne", KILLED_BY_AN);
+                losehp(rnd(10), "cursed throne", KILLED_BY_AN, NONE_RES);
                 break;
             case 2:
                 (void) adjattrib(rn2(A_MAX), 1, FALSE);
@@ -171,7 +171,7 @@ dosit()
                 pline("A%s electric shock shoots through your body!",
                       (Shock_resistance) ? "n" : " massive");
                 losehp(Shock_resistance ? rnd(6) : rnd(30), "electric chair",
-                       KILLED_BY_AN);
+                       KILLED_BY_AN, SHOCK_RES);
                 exercise(A_CON, FALSE);
                 break;
             case 4:

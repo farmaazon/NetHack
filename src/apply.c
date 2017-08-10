@@ -67,7 +67,7 @@ struct obj *obj;
     consume_obj_charge(obj, TRUE);
 
     if (obj->cursed && !rn2(2)) {
-        (void) zapyourself(obj, TRUE);
+        (void) zapyourself(obj, TRUE, NULL);
     } else if (u.uswallow) {
         You("take a picture of %s %s.", s_suffix(mon_nam(u.ustuck)),
             mbodypart(u.ustuck, STOMACH));
@@ -75,7 +75,7 @@ struct obj *obj;
         You("take a picture of the %s.",
             (u.dz > 0) ? surface(u.ux, u.uy) : ceiling(u.ux, u.uy));
     } else if (!u.dx && !u.dy) {
-        (void) zapyourself(obj, TRUE);
+        (void) zapyourself(obj, TRUE, NULL);
     } else if ((mtmp = bhit(u.dx, u.dy, COLNO, FLASHED_LIGHT,
                             (int FDECL((*), (MONST_P, OBJ_P))) 0,
                             (int FDECL((*), (OBJ_P, OBJ_P))) 0, &obj)) != 0) {
@@ -1703,7 +1703,7 @@ int magic; /* 0=Physical, otherwise skill level */
 
                 You("rip yourself free of the bear trap!  Ouch!");
                 losehp(Maybe_Half_Phys(rnd(10)), "jumping out of a bear trap",
-                       KILLED_BY);
+                       KILLED_BY, NONE_RES);
                 set_wounded_legs(side, rn1(1000, 500));
                 break;
             }
@@ -2647,7 +2647,7 @@ struct obj *obj;
             dam = 1;
         You("hit your %s with your bullwhip.", body_part(FOOT));
         Sprintf(buf, "killed %sself with %s bullwhip", uhim(), uhis());
-        losehp(Maybe_Half_Phys(dam), buf, NO_KILLER_PREFIX);
+        losehp(Maybe_Half_Phys(dam), buf, NO_KILLER_PREFIX, NONE_RES);
         context.botl = 1;
         return 1;
 
@@ -3189,7 +3189,7 @@ struct obj *obj;
         if (P_SKILL(typ) <= P_BASIC) {
             You("hook yourself!");
             losehp(Maybe_Half_Phys(rn1(10, 10)), "a grappling hook",
-                   KILLED_BY);
+                   KILLED_BY, NONE_RES);
             return 1;
         }
         break;
@@ -3209,6 +3209,7 @@ struct obj *obj;
     register int i, x, y;
     register struct monst *mon;
     int dmg, damage;
+    uchar res_type = NONE_RES;
     boolean affects_objects;
     boolean shop_damage = FALSE;
     boolean fillmsg = FALSE;
@@ -3377,6 +3378,7 @@ struct obj *obj;
                     bot(); /* potion effects */
             }
         } else {
+            uchar res_type;
             /*
              * Wand breakage is targetting the hero.  Using xdir[]+ydir[]
              * deltas for location selection causes this case to happen
@@ -3394,10 +3396,11 @@ struct obj *obj;
                 if (context.botl)
                     bot(); /* potion effects */
             }
-            damage = zapyourself(obj, FALSE);
+
+            damage = zapyourself(obj, FALSE, &res_type);
             if (damage) {
                 Sprintf(buf, "killed %sself by breaking a wand", uhim());
-                losehp(Maybe_Half_Phys(damage), buf, NO_KILLER_PREFIX);
+                losehp(Maybe_Half_Phys(damage), buf, NO_KILLER_PREFIX, res_type);
             }
             if (context.botl)
                 bot(); /* blindness */

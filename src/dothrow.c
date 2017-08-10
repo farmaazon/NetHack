@@ -561,7 +561,7 @@ int x, y;
             else
                 s = "bumping into a door";
             dmg = rnd(2 + *range);
-            losehp(Maybe_Half_Phys(dmg), s, KILLED_BY);
+            losehp(Maybe_Half_Phys(dmg), s, KILLED_BY, NONE_RES);
             wake_nearto(x,y, 10);
             return FALSE;
         }
@@ -569,14 +569,14 @@ int x, y;
             You("crash into some iron bars.  Ouch!");
             dmg = rnd(2 + *range);
             losehp(Maybe_Half_Phys(dmg), "crashing into iron bars",
-                   KILLED_BY);
+                   KILLED_BY, NONE_RES);
             wake_nearto(x,y, 20);
             return FALSE;
         }
         if ((obj = sobj_at(BOULDER, x, y)) != 0) {
             You("bump into a %s.  Ouch!", xname(obj));
             dmg = rnd(2 + *range);
-            losehp(Maybe_Half_Phys(dmg), "bumping into a boulder", KILLED_BY);
+            losehp(Maybe_Half_Phys(dmg), "bumping into a boulder", KILLED_BY, NONE_RES);
             wake_nearto(x,y, 10);
             return FALSE;
         }
@@ -585,7 +585,7 @@ int x, y;
             You("smack into something!");
             dmg = rnd(2 + *range);
             losehp(Maybe_Half_Phys(dmg), "touching the edge of the universe",
-                   KILLED_BY);
+                   KILLED_BY, NONE_RES);
             wake_nearto(x,y, 10);
             return FALSE;
         }
@@ -599,7 +599,7 @@ int x, y;
                     too_much ? "and all your belongings " : "");
                 dmg = rnd(2 + *range);
                 losehp(Maybe_Half_Phys(dmg), "wedging into a narrow crevice",
-                       KILLED_BY);
+                       KILLED_BY, NONE_RES);
                 wake_nearto(x,y, 10);
                 return FALSE;
             }
@@ -961,7 +961,7 @@ boolean hitsroof;
         }
         hitfloor(obj);
         thrownobj = 0;
-        losehp(Maybe_Half_Phys(dmg), "falling object", KILLED_BY_AN);
+        losehp(Maybe_Half_Phys(dmg), "falling object", KILLED_BY_AN, NONE_RES);
     }
     return TRUE;
 }
@@ -1220,7 +1220,7 @@ boolean
                     (void) artifact_hit((struct monst *) 0, &youmonst, obj,
                                         &dmg, 0);
                     losehp(Maybe_Half_Phys(dmg), killer_xname(obj),
-                           KILLED_BY);
+                           KILLED_BY, NONE_RES);
                 }
                 if (ship_object(obj, u.ux, u.uy, FALSE)) {
                     thrownobj = (struct obj *) 0;

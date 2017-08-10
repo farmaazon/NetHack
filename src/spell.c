@@ -155,7 +155,7 @@ struct obj *bp;
         bp->in_use = FALSE;
         losestr(Poison_resistance ? rn1(2, 1) : rn1(4, 3));
         losehp(rnd(Poison_resistance ? 6 : 10), "contact-poisoned spellbook",
-               KILLED_BY_AN);
+               KILLED_BY_AN, POISON_RES);
         bp->in_use = was_in_use;
         break;
     case 6:
@@ -166,7 +166,7 @@ struct obj *bp;
             pline("As you read the book, it %s in your %s!", explodes,
                   body_part(FACE));
             dmg = 2 * rnd(10) + 5;
-            losehp(Maybe_Half_Phys(dmg), "exploding rune", KILLED_BY_AN);
+            losehp(Maybe_Half_Phys(dmg), "exploding rune", KILLED_BY_AN, NONE_RES);
         }
         return TRUE;
     default:
@@ -1029,11 +1029,12 @@ boolean atme;
                 n = rnd(8) + 1;
                 while (n--) {
                     if (!u.dx && !u.dy && !u.dz) {
-                        if ((damage = zapyourself(pseudo, TRUE)) != 0) {
+                        uchar res_type;
+                        if ((damage = zapyourself(pseudo, TRUE, &res_type)) != 0) {
                             char buf[BUFSZ];
                             Sprintf(buf, "zapped %sself with a spell",
                                     uhim());
-                            losehp(damage, buf, NO_KILLER_PREFIX);
+                            losehp(damage, buf, NO_KILLER_PREFIX, res_type);
                         }
                     } else {
                         explode(u.dx, u.dy,
@@ -1093,13 +1094,14 @@ boolean atme;
                 pline_The("magical energy is released!");
             }
             if (!u.dx && !u.dy && !u.dz) {
-                if ((damage = zapyourself(pseudo, TRUE)) != 0) {
+                uchar res_type;
+                if ((damage = zapyourself(pseudo, TRUE, &res_type)) != 0) {
                     char buf[BUFSZ];
 
                     Sprintf(buf, "zapped %sself with a spell", uhim());
                     if (physical_damage)
                         damage = Maybe_Half_Phys(damage);
-                    losehp(damage, buf, NO_KILLER_PREFIX);
+                    losehp(damage, buf, NO_KILLER_PREFIX, res_type);
                 }
             } else
                 weffects(pseudo);

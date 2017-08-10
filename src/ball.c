@@ -48,7 +48,7 @@ ballfall()
                 pline("%s does not protect you.", Yname2(uarmh));
         }
         losehp(Maybe_Half_Phys(dmg), "crunched in the head by an iron ball",
-               NO_KILLER_PREFIX);
+               NO_KILLER_PREFIX, NONE_RES);
     }
 }
 
@@ -728,7 +728,7 @@ xchar x, y;
                          body_part(LEG));
                     losehp(Maybe_Half_Phys(2),
                            "leg damage from being pulled out of a bear trap",
-                           KILLED_BY);
+                           KILLED_BY, NONE_RES);
                 }
                 break;
             }
@@ -816,21 +816,21 @@ drag_down()
         if (rn2(6)) {
             pline_The("iron ball drags you downstairs!");
             losehp(Maybe_Half_Phys(rnd(6)),
-                   "dragged downstairs by an iron ball", NO_KILLER_PREFIX);
+                   "dragged downstairs by an iron ball", NO_KILLER_PREFIX, NONE_RES);
             litter();
         }
     } else {
         if (rn2(2)) {
             pline_The("iron ball smacks into you!");
             losehp(Maybe_Half_Phys(rnd(20)), "iron ball collision",
-                   KILLED_BY_AN);
+                   KILLED_BY_AN, NONE_RES);
             exercise(A_STR, FALSE);
             dragchance -= 2;
         }
         if ((int) dragchance >= rnd(6)) {
             pline_The("iron ball drags you downstairs!");
             losehp(Maybe_Half_Phys(rnd(3)),
-                   "dragged downstairs by an iron ball", NO_KILLER_PREFIX);
+                   "dragged downstairs by an iron ball", NO_KILLER_PREFIX, NONE_RES);
             exercise(A_STR, FALSE);
             litter();
         }

@@ -992,7 +992,7 @@ unsigned trflags;
             stackobj(otmp);
             newsym(u.ux, u.uy); /* map the rock */
 
-            losehp(Maybe_Half_Phys(dmg), "falling rock", KILLED_BY_AN);
+            losehp(Maybe_Half_Phys(dmg), "falling rock", KILLED_BY_AN, NONE_RES);
             exercise(A_STR, FALSE);
         }
         break;
@@ -1045,7 +1045,7 @@ unsigned trflags;
             set_wounded_legs(rn2(2) ? RIGHT_SIDE : LEFT_SIDE, rn1(10, 10));
             if (u.umonnum == PM_OWLBEAR || u.umonnum == PM_BUGBEAR)
                 You("howl in anger!");
-            losehp(Maybe_Half_Phys(dmg), "bear trap", KILLED_BY_AN);
+            losehp(Maybe_Half_Phys(dmg), "bear trap", KILLED_BY_AN, NONE_RES);
         }
         exercise(A_DEX, FALSE);
         break;
@@ -1111,7 +1111,7 @@ unsigned trflags;
 
             pline("%s you!", A_gush_of_water_hits);
             You("are covered with rust!");
-            losehp(Maybe_Half_Phys(dam), "rusting away", KILLED_BY);
+            losehp(Maybe_Half_Phys(dam), "rusting away", KILLED_BY, NONE_RES);
         } else if (u.umonnum == PM_GREMLIN && rn2(3)) {
             pline("%s you!", A_gush_of_water_hits);
             (void) split_mon(&youmonst, (struct monst *) 0);
@@ -1190,7 +1190,7 @@ unsigned trflags;
                            ? "deliberately plunged into a pit of iron spikes"
                            : adj_pit ? "stepped into a pit of iron spikes"
                                      : "fell into a pit of iron spikes",
-                       NO_KILLER_PREFIX);
+                       NO_KILLER_PREFIX, NONE_RES);
                 if (!rn2(6))
                     poisoned("spikes", A_STR,
                              adj_pit ? "stepping on poison spikes"
@@ -1205,7 +1205,7 @@ unsigned trflags;
                     losehp(Maybe_Half_Phys(rnd(6)),
                            plunged ? "deliberately plunged into a pit"
                                    : "fell into a pit",
-                           NO_KILLER_PREFIX);
+                           NO_KILLER_PREFIX, NONE_RES);
             }
             if (Punished && !carried(uball)) {
                 unplacebc();
@@ -1332,7 +1332,7 @@ unsigned trflags;
             deltrap(trap);
             newsym(u.ux, u.uy); /* update position */
             You("are caught in a magical explosion!");
-            losehp(rnd(10), "magical explosion", KILLED_BY_AN);
+            losehp(rnd(10), "magical explosion", KILLED_BY_AN, NONE_RES);
             Your("body absorbs some of the magical energy!");
             u.uen = (u.uenmax += 2);
             break;
@@ -1375,7 +1375,7 @@ unsigned trflags;
                                      : (dmgval2 >= hp / 4) ? "very lethargic."
                                                            : "sluggish.");
             /* opposite of magical explosion */
-            losehp(dmgval2, "anti-magic implosion", KILLED_BY_AN);
+            losehp(dmgval2, "anti-magic implosion", KILLED_BY_AN, NONE_RES);
         }
         break;
 
@@ -1451,7 +1451,7 @@ unsigned trflags;
         if (steed_mid && saddle && !u.usteed)
             (void) keep_saddle_with_steedcorpse(steed_mid, fobj, saddle);
         newsym(u.ux, u.uy); /* update trap symbol */
-        losehp(Maybe_Half_Phys(rnd(16)), "land mine", KILLED_BY_AN);
+        losehp(Maybe_Half_Phys(rnd(16)), "land mine", KILLED_BY_AN, NONE_RES);
         /* fall recursively into the pit... */
         if ((trap = t_at(u.ux, u.uy)) != 0)
             dotrap(trap, RECURSIVETRAP);
@@ -2910,7 +2910,7 @@ long hmask, emask; /* might cancel timeout */
                         pline("Bummer!  You've crashed.");
                     else
                         You("fall over.");
-                    losehp(rnd(2), "dangerous winds", KILLED_BY);
+                    losehp(rnd(2), "dangerous winds", KILLED_BY, NONE_RES);
                     if (u.usteed)
                         dismount_steed(DISMOUNT_FELL);
                     selftouch("As you fall, you");
@@ -3018,7 +3018,7 @@ struct obj *box; /* null for floor trap */
         if (Fire_resistance)
             You("are uninjured.");
         else
-            losehp(rnd(3), "boiling water", KILLED_BY);
+            losehp(rnd(3), "boiling water", KILLED_BY, FIRE_RES);
         return;
     }
     pline("A %s %s from %s!", tower_of_flame, box ? "bursts" : "erupts",
@@ -3052,12 +3052,12 @@ struct obj *box; /* null for floor trap */
     } else {
         num = d(2, 4);
         if (u.uhpmax > u.ulevel)
-            u.uhpmax -= rn2(min(u.uhpmax, num + 1)), context.botl = 1;
+            u.uhpmax -= scale_dmg(rn2(min(u.uhpmax, num + 1)), FIRE_RES), context.botl = 1;
     }
     if (!num)
         You("are uninjured.");
     else
-        losehp(num, tower_of_flame, KILLED_BY_AN); /* fire damage */
+        losehp(num, tower_of_flame, KILLED_BY_AN, FIRE_RES); /* fire damage */
     burn_away_slime();
 
     if (burnarmor(&youmonst) || rn2(3)) {
@@ -3596,7 +3596,7 @@ drown()
         i = Maybe_Half_Phys(d(2, 6));
         if (u.mhmax > i)
             u.mhmax -= i;
-        losehp(i, "rusting away", KILLED_BY);
+        losehp(i, "rusting away", KILLED_BY, NONE_RES);
     }
     if (inpool_ok)
         return FALSE;
@@ -4662,7 +4662,7 @@ boolean disarm;
                 delobj(otmp);
             }
             wake_nearby();
-            losehp(Maybe_Half_Phys(d(6, 6)), buf, KILLED_BY_AN);
+            losehp(Maybe_Half_Phys(d(6, 6)), buf, KILLED_BY_AN, NONE_RES);
             exercise(A_STR, FALSE);
             if (costly && loss) {
                 if (insider)
@@ -4713,7 +4713,7 @@ boolean disarm;
             destroy_item(RING_CLASS, AD_ELEC);
             destroy_item(WAND_CLASS, AD_ELEC);
             if (dmg)
-                losehp(dmg, "electric shock", KILLED_BY_AN);
+                losehp(dmg, "electric shock", KILLED_BY_AN, SHOCK_RES);
             break;
         } /* case 6 */
         case 5:
@@ -4927,7 +4927,7 @@ int bodypart;
 
     pline("KABOOM!!  %s was booby-trapped!", The(item));
     wake_nearby();
-    losehp(Maybe_Half_Phys(dmg), "explosion", KILLED_BY_AN);
+    losehp(Maybe_Half_Phys(dmg), "explosion", KILLED_BY_AN, NONE_RES);
     exercise(A_STR, FALSE);
     if (bodypart)
         exercise(A_CON, FALSE);
@@ -5010,6 +5010,7 @@ static const char lava_killer[] = "molten lava";
 boolean
 lava_effects()
 {
+    /* TODO: consider percentage fire insensitiveness */
     register struct obj *obj, *obj2;
     int dmg = d(6, 6); /* only applicable for water walking */
     boolean usurvive, boil_away;
@@ -5055,7 +5056,7 @@ lava_effects()
         if (Wwalking) {
             pline_The("%s here burns you!", hliquid("lava"));
             if (usurvive) {
-                losehp(dmg, lava_killer, KILLED_BY); /* lava damage */
+                losehp(dmg, lava_killer, KILLED_BY, FIRE_RES); /* lava damage */
                 goto burn_stuff;
             }
         } else
@@ -5122,7 +5123,7 @@ lava_effects()
             : " and are about to be immolated");
         if (u.uhp > 1)
             losehp(!boil_away ? 1 : (u.uhp / 2), lava_killer,
-                   KILLED_BY); /* lava damage */
+                   KILLED_BY, FIRE_RES); /* lava damage */
     }
 
 burn_stuff:

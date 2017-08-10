@@ -1833,7 +1833,7 @@ prayer_done() /* M. Stephenson (1.0.3b) */
         /* KMH -- Gods have mastery over unchanging */
         rehumanize();
         /* no Half_physical_damage adjustment here */
-        losehp(rnd(20), "residual undead turning effect", KILLED_BY_AN);
+        losehp(rnd(20), "residual undead turning effect", KILLED_BY_AN, NONE_RES);
         exercise(A_CON, FALSE);
         return 1;
     }

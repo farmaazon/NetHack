@@ -607,7 +607,7 @@ register struct obj *otmp;
                     set_ulycn(NON_PM); /* cure lycanthropy */
                 }
                 losehp(Maybe_Half_Phys(d(2, 6)), "potion of holy water",
-                       KILLED_BY_AN);
+                       KILLED_BY_AN, NONE_RES);
             } else if (otmp->cursed) {
                 You_feel("quite proud of yourself.");
                 healup(d(2, 6), 0, 0, 0);
@@ -628,7 +628,7 @@ register struct obj *otmp;
                 if (u.ualign.type == A_LAWFUL) {
                     pline("This burns like %s!", hliquid("acid"));
                     losehp(Maybe_Half_Phys(d(2, 6)), "potion of unholy water",
-                           KILLED_BY_AN);
+                           KILLED_BY_AN, NONE_RES);
                 } else
                     You_feel("full of dread.");
                 if (u.ulycn >= LOW_PM && !Upolyd)
@@ -804,7 +804,7 @@ register struct obj *otmp;
             pline("(But in fact it was mildly stale %s.)", fruitname(TRUE));
             if (!Role_if(PM_HEALER)) {
                 /* NB: blessed otmp->fromsink is not possible */
-                losehp(1, "mildly contaminated potion", KILLED_BY_AN);
+                losehp(1, "mildly contaminated potion", KILLED_BY_AN, NONE_RES);
             }
         } else {
             if (Poison_resistance)
@@ -828,14 +828,14 @@ register struct obj *otmp;
                 if (!Poison_resistance) {
                     if (otmp->fromsink)
                         losehp(rnd(10) + 5 * !!(otmp->cursed), contaminant,
-                               KILLED_BY);
+                               KILLED_BY, POISON_RES);
                     else
                         losehp(rnd(10) + 5 * !!(otmp->cursed), contaminant,
-                               KILLED_BY_AN);
+                               KILLED_BY_AN, POISON_RES);
                 } else {
                     /* rnd loss is so that unblessed poorer than blessed */
                     losehp(1 + rn2(2), contaminant,
-                           (otmp->fromsink) ? KILLED_BY : KILLED_BY_AN);
+                           (otmp->fromsink) ? KILLED_BY : KILLED_BY_AN, POISON_RES);
                 }
                 exercise(A_CON, FALSE);
             }
@@ -1005,7 +1005,7 @@ register struct obj *otmp;
                 You("hit your %s on the %s.", body_part(HEAD),
                     ceiling(u.ux, u.uy));
                 losehp(Maybe_Half_Phys(dmg), "colliding with the ceiling",
-                       KILLED_BY);
+                       KILLED_BY, NONE_RES);
                 nothing = 0; /* not nothing after all */
             }
         } else if (otmp->blessed) {
@@ -1065,7 +1065,7 @@ register struct obj *otmp;
                 You("burn your %s.", body_part(FACE));
                 /* fire damage */
                 losehp(d(Fire_resistance ? 1 : 3, 4), "burning potion of oil",
-                       KILLED_BY_AN);
+                       KILLED_BY_AN, FIRE_RES);
             }
         } else if (otmp->cursed)
             pline("This tastes like castor oil.");
@@ -1085,7 +1085,7 @@ register struct obj *otmp;
                   otmp->blessed ? " a little" : otmp->cursed ? " a lot"
                                                              : " like acid");
             dmg = d(otmp->cursed ? 2 : 1, otmp->blessed ? 4 : 8);
-            losehp(Maybe_Half_Phys(dmg), "potion of acid", KILLED_BY_AN);
+            losehp(Maybe_Half_Phys(dmg), "potion of acid", KILLED_BY_AN, ACID_RES);
             exercise(A_CON, FALSE);
         }
         if (Stoned)
@@ -1260,7 +1260,7 @@ boolean your_fault;
         distance = 0;
         pline_The("%s crashes on your %s and breaks into shards.", botlnam,
                   body_part(HEAD));
-        losehp(Maybe_Half_Phys(rnd(2)), "thrown potion", KILLED_BY_AN);
+        losehp(Maybe_Half_Phys(rnd(2)), "thrown potion", KILLED_BY_AN, NONE_RES);
     } else {
         tx = mon->mx, ty = mon->my;
         /* sometimes it hits the saddle */
@@ -1318,7 +1318,7 @@ boolean your_fault;
                       obj->blessed ? " a little"
                                    : obj->cursed ? " a lot" : "");
                 dmg = d(obj->cursed ? 2 : 1, obj->blessed ? 4 : 8);
-                losehp(Maybe_Half_Phys(dmg), "potion of acid", KILLED_BY_AN);
+                losehp(Maybe_Half_Phys(dmg), "potion of acid", KILLED_BY_AN, ACID_RES);
             }
             break;
         }
@@ -1954,7 +1954,7 @@ dodip()
             useupall(obj);
             useup(potion);
             losehp(amt + rnd(9), /* not physical damage */
-                   "alchemic blast", KILLED_BY_AN);
+                   "alchemic blast", KILLED_BY_AN, NONE_RES);
             return 1;
         }
 

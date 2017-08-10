@@ -80,7 +80,7 @@ const char *name; /* if null, then format `obj' */
         } else {
             if (is_acid)
                 pline("It burns!");
-            losehp(dam, knm, kprefix); /* acid damage */
+            losehp(dam, knm, kprefix, ACID_RES); /* acid damage */
             exercise(A_STR, FALSE);
         }
         return 1;

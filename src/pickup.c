@@ -1663,7 +1663,7 @@ int cindex, ccount; /* index of this container (1..N), number of them (N) */
         You("carefully open %s...", the(xname(cobj)));
         pline("It develops a huge set of teeth and bites you!");
         tmp = rnd(10);
-        losehp(Maybe_Half_Phys(tmp), "carnivorous bag", KILLED_BY_AN);
+        losehp(Maybe_Half_Phys(tmp), "carnivorous bag", KILLED_BY_AN, NONE_RES);
         makeknown(BAG_OF_TRICKS);
         abort_looting = TRUE;
         return 1;
@@ -2138,7 +2138,7 @@ register struct obj *obj;
         else
             panic("in_container:  bag not found.");
 
-        losehp(d(6, 6), "magical explosion", KILLED_BY_AN);
+        losehp(d(6, 6), "magical explosion", KILLED_BY_AN, NONE_RES);
         current_container = 0; /* baggone = TRUE; */
     }
 

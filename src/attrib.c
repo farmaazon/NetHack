@@ -292,23 +292,27 @@ boolean thrown_weapon; /* thrown weapons are less deadly */
 
     i = !fatal ? 1 : rn2(fatal + (thrown_weapon ? 20 : 0));
     if (i == 0 && typ != A_CHA) {
-        /* instant kill */
-        u.uhp = -1;
-        context.botl = TRUE;
+        /* instant kill - not if you're at some point resistant */
+        register int loss = u.uhp;
         pline_The("poison was deadly...");
+        losehp(loss, pkiller, kprefix, POISON_RES); /* quick way to increase poison insensitivity */
     } else if (i > 5) {
         /* HP damage; more likely--but less severe--with missiles */
         loss = thrown_weapon ? rnd(6) : rn1(10, 6);
-        losehp(loss, pkiller, kprefix); /* poison damage */
+        losehp(loss, pkiller, kprefix, POISON_RES); /* poison damage */
     } else {
         /* attribute loss; if typ is A_STR, reduction in current and
            maximum HP will occur once strength has dropped down to 3 */
-        loss = (thrown_weapon || !fatal) ? 1 : d(2, 2); /* was rn1(3,3) */
+        loss = scale_dmg((thrown_weapon || !fatal) ? 1 : d(2, 2), POISON_RES); /* was rn1(3,3) */
         /* check that a stat change was made */
         if (adjattrib(typ, -loss, 1))
+        {
             poisontell(typ, TRUE);
+            train_perc_prop(loss, POISON_RES);
+        }
     }
 
+    /* TODO: is this "if" code still needed? */
     if (u.uhp < 1) {
         killer.format = kprefix;
         Strcpy(killer.name, pkiller);

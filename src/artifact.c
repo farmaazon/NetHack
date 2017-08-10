@@ -694,7 +694,7 @@ struct monst *mon;
         if (objects[obj->otyp].oc_material == SILVER && Hate_silver)
             tmp = rnd(10), dmg += Maybe_Half_Phys(tmp);
         Sprintf(buf, "touching %s", oart->name);
-        losehp(dmg, buf, KILLED_BY); /* magic damage, not physical */
+        losehp(dmg, buf, KILLED_BY, NONE_RES); /* magic damage, not physical */
         exercise(A_WIS, FALSE);
     }
 
@@ -1904,7 +1904,7 @@ boolean loseit;    /* whether to drop it if hero can longer touch it */
             if (bane)
                 dmg += rnd(10);
             Sprintf(buf, "handling %s", killer_xname(obj));
-            losehp(dmg, buf, KILLED_BY);
+            losehp(dmg, buf, KILLED_BY, NONE_RES);
             exercise(A_CON, FALSE);
         }
     }

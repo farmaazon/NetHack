@@ -1972,7 +1972,7 @@ boolean was_swallowed; /* digestion */
                     There("is an explosion in your %s!", body_part(STOMACH));
                     Sprintf(killer.name, "%s explosion",
                             s_suffix(mdat->mname));
-                    losehp(Maybe_Half_Phys(tmp), killer.name, KILLED_BY_AN);
+                    losehp(Maybe_Half_Phys(tmp), killer.name, KILLED_BY_AN, NONE_RES);
                 } else {
                     You_hear("an explosion.");
                     magr->mhp -= tmp;

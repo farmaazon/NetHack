@@ -1622,21 +1622,21 @@ struct obj *otmp;
         tp++;
         You("have a very bad case of stomach acid.");   /* not body_part() */
         losehp(rnd(15), !glob ? "acidic corpse" : "acidic glob",
-               KILLED_BY_AN); /* acid damage */
+               KILLED_BY_AN, ACID_RES); /* acid damage */
     } else if (poisonous(&mons[mnum]) && rn2(5)) {
         tp++;
         pline("Ecch - that must have been poisonous!");
         if (!Poison_resistance) {
             losestr(rnd(4));
             losehp(rnd(15), !glob ? "poisonous corpse" : "poisonous glob",
-                   KILLED_BY_AN);
+                   KILLED_BY_AN, POISON_RES);
         } else
             You("seem unaffected by the poison.");
     /* now any corpse left too long will make you mildly ill */
     } else if ((rotted > 5L || (rotted > 3L && rn2(5))) && !Sick_resistance) {
         tp++;
         You_feel("%ssick.", (Sick) ? "very " : "");
-        losehp(rnd(8), !glob ? "cadaver" : "rotted glob", KILLED_BY_AN);
+        losehp(rnd(8), !glob ? "cadaver" : "rotted glob", KILLED_BY_AN, SICK_RES);
     }
 
     /* delay is weight dependent */
@@ -2526,7 +2526,7 @@ doeat()
             pline("Ecch - that must have been poisonous!");
             if (!Poison_resistance) {
                 losestr(rnd(4));
-                losehp(rnd(15), xname(otmp), KILLED_BY_AN);
+                losehp(rnd(15), xname(otmp), KILLED_BY_AN, POISON_RES);
             } else
                 You("seem unaffected by the poison.");
         } else if (!nodelicious) {
