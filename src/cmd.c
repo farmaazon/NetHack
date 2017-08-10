@@ -2492,6 +2492,29 @@ int final;
     }
 #endif
 
+    if (wizard) {
+        char buf[BUFSZ];
+        static const char *PercResStr[] = {
+            "nothing",
+            "fire",
+            "cold",
+            "sleep magic",
+            "disintegration",
+            "electricity",
+            "poison",
+            "acid",
+            "petrification",
+            "life draining",
+            "sickness"
+        };
+
+        for (register int i = 1; i <= LAST_PERC_PROP; ++i)
+        {
+            snprintf(buf, BUFSZ, "%d%% insensitivity to %s", u.uperc_props[i], PercResStr[i]);
+            you_have("", buf);
+        }
+    }
+
     {
         const char *p;
 

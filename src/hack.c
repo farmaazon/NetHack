@@ -24,6 +24,9 @@ STATIC_DCL void FDECL(move_update, (BOOLEAN_P));
 #define TRAVP_GUESS  1
 #define TRAVP_VALID  2
 
+/* used in scaling damage according to percentage resistances */
+#define PERC_RES 100
+
 static anything tmp_anything;
 
 anything *
@@ -2993,6 +2996,32 @@ struct obj *otmp;
         otmp = otmp->nobj;
     }
     return 0L;
+}
+
+int
+scale_dmg(dmg, res)
+int dmg, res;
+{
+    return dmg*(PERC_RES - u.uperc_props[res])/PERC_RES;
+}
+
+void
+train_perc_prop(dmg, res_type)
+int dmg, res_type;
+{
+    const int res = u.uperc_props[res_type];
+    int change, dmg_sign;
+    if (dmg == 0)
+        return;
+
+    if (res == 0)
+        change = 3;
+    else
+    {
+        dmg_sign = dmg > 0 ? 1 : -1;
+        change = dmg/res + (rnd((abs(dmg) % res)+1) < res ? dmg_sign : 0);
+    }
+    u.uperc_props[res] += change;
 }
 
 /*hack.c*/

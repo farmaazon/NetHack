@@ -289,6 +289,7 @@ struct you {
     unsigned uhs; /* hunger state - see eat.c */
 
     struct prop uprops[LAST_PROP + 1];
+    int uperc_props[LAST_PERC_PROP + 1];
 
     unsigned umconf;
     Bitfield(usick_type, 2);

@@ -108,8 +108,10 @@ boolean pushing;
                     hliquid("lava"), Fire_resistance ? '.' : '!');
                 burn_away_slime();
                 dmg = d((Fire_resistance ? 1 : 3), 6);
+                dmg = scale_dmg(dmg, FIRE_RES);
                 losehp(Maybe_Half_Phys(dmg), /* lava damage */
                        "molten lava", KILLED_BY);
+                train_perc_prop(dmg, FIRE_RES);
             } else if (!fills_up && flags.verbose
                        && (pushing ? !Blind : cansee(rx, ry)))
                 pline("It sinks without a trace!");

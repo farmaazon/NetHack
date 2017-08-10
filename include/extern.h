@@ -851,6 +851,8 @@ E int NDECL(max_capacity);
 E boolean FDECL(check_capacity, (const char *));
 E int FDECL(inv_cnt, (BOOLEAN_P));
 E long FDECL(money_cnt, (struct obj *));
+E int FDECL(scale_dmg, (int, int));
+E void FDECL(train_perc_prop, (int, int));
 
 /* ### hacklib.c ### */
 

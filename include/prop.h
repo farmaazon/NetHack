@@ -85,6 +85,7 @@
 #define FIXED_ABIL 66
 #define LIFESAVED 67
 #define LAST_PROP (LIFESAVED)
+#define LAST_PERC_PROP (SICK_RES)
 
 /*** Where the properties come from ***/
 /* Definitions were moved here from obj.h and you.h */

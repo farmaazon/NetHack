@@ -1977,6 +1977,7 @@ boolean ufound;
                                                       : "thin air");
     else {
         register int tmp = d((int) mattk->damn, (int) mattk->damd);
+        register int res_type = -1;
         register boolean not_affected = defends((int) mattk->adtyp, uwep);
 
         hitmsg(mtmp, mattk);
@@ -1985,14 +1986,17 @@ boolean ufound;
         case AD_COLD:
             physical_damage = FALSE;
             not_affected |= Cold_resistance;
+            res_type = COLD_RES;
             goto common;
         case AD_FIRE:
             physical_damage = FALSE;
             not_affected |= Fire_resistance;
+            res_type = FIRE_RES;
             goto common;
         case AD_ELEC:
             physical_damage = FALSE;
             not_affected |= Shock_resistance;
+            res_type = SHOCK_RES;
         common:
 
             if (!not_affected) {
@@ -2007,7 +2011,10 @@ boolean ufound;
                     burn_away_slime();
                 if (physical_damage)
                     tmp = Maybe_Half_Phys(tmp);
+                if (res_type >= 0)
+                    tmp = scale_dmg(tmp, res_type);
                 mdamageu(mtmp, tmp);
+                train_perc_prop(tmp, res_type);
             }
             break;
 
