@@ -387,6 +387,13 @@ nh_timeout()
     }
 
     for (upp = u.uprops; upp < u.uprops + SIZE(u.uprops); upp++)
+    {
+        /* Some special percentage resistances slow down the timeout */
+        if (upp-u.uprops == STONED && rnd(100) <= u.uperc_props[STONE_RES])
+            continue;
+        if (upp-u.uprops == SICK && rnd(100) <= u.uperc_props[SICK_RES])
+            continue;
+
         if ((upp->intrinsic & TIMEOUT) && !(--upp->intrinsic & TIMEOUT)) {
             kptr = find_delayed_killer((int) (upp - u.uprops));
             switch (upp - u.uprops) {
@@ -549,6 +556,7 @@ nh_timeout()
                 break;
             }
         }
+    }
 
     run_timers();
 }

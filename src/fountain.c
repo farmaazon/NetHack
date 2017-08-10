@@ -537,7 +537,7 @@ drinksink()
         if (Fire_resistance)
             pline("It seems quite tasty.");
         else
-            losehp(rnd(6), "sipping boiling water", KILLED_BY);
+            losehp(scale_dmg(rnd(6), FIRE_RES), "sipping boiling water", KILLED_BY);
         /* boiling water burns considered fire damage */
         break;
     case 3:

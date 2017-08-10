@@ -2251,7 +2251,7 @@ register struct monst *mon;
                                         || mon->data->mlet == S_MUMMY)
                         && rn2(5) && !Sick_resistance) {
                         You_feel("%ssick.", (Sick) ? "very " : "");
-                        mdamageu(mon, rnd(8));
+                        mdamageu(mon, rnd(8), SICK_RES);
                     }
                 }
             } else {
@@ -2351,7 +2351,7 @@ boolean wep_was_destroyed;
                     hliquid("acid"));
 
             if (!Acid_resistance)
-                mdamageu(mon, tmp);
+                mdamageu(mon, tmp, ACID_RES);
             if (!rn2(30))
                 erode_armor(&youmonst, ERODE_CORRODE);
         }
@@ -2419,7 +2419,7 @@ boolean wep_was_destroyed;
             pline("A hail of magic missiles narrowly misses you!");
         } else {
             You("are hit by magic missiles appearing from thin air!");
-            mdamageu(mon, tmp);
+            mdamageu(mon, tmp, NONE_RES);
         }
         break;
     case AD_ENCH: /* KMH -- remove enchantment (disenchanter) */
@@ -2492,7 +2492,7 @@ boolean wep_was_destroyed;
                     break;
                 }
                 You("are suddenly very cold!");
-                mdamageu(mon, tmp);
+                mdamageu(mon, tmp, COLD_RES);
                 /* monster gets stronger with your heat! */
                 mon->mhp += tmp / 2;
                 if (mon->mhpmax < mon->mhp)
@@ -2515,7 +2515,7 @@ boolean wep_was_destroyed;
                     break;
                 }
                 You("are suddenly very hot!");
-                mdamageu(mon, tmp); /* fire damage */
+                mdamageu(mon, tmp, FIRE_RES); /* fire damage */
             }
             break;
         case AD_ELEC:
@@ -2526,7 +2526,7 @@ boolean wep_was_destroyed;
                 break;
             }
             You("are jolted with electricity!");
-            mdamageu(mon, tmp);
+            mdamageu(mon, tmp, SHOCK_RES);
             break;
         default:
             break;

@@ -40,7 +40,7 @@ int expltype;
     int idamres, idamnonres;
     struct monst *mtmp, *mdef = 0;
     uchar adtyp;
-    int res_type = -1;
+    uchar res_type = NONE_RES;
     int explmask[3][3]; /* 0=normal explosion, 1=do shieldeff, 2=do nothing */
     boolean shopdamage = FALSE, generic = FALSE, physical_dmg = FALSE,
             do_hallu = FALSE, inside_engulfer;
@@ -464,8 +464,7 @@ int expltype;
             You("are unharmed!");
         } else if (adtyp == AD_PHYS || physical_dmg)
             damu = Maybe_Half_Phys(damu);
-        if (res_type >= 0)
-            damu = scale_dmg(damu, res_type);
+        damu = scale_dmg(damu, res_type);
         if (adtyp == AD_FIRE)
             (void) burnarmor(&youmonst);
         destroy_item(SCROLL_CLASS, (int) adtyp);
@@ -514,7 +513,7 @@ int expltype;
                 done((adtyp == AD_FIRE) ? BURNING : DIED);
             }
         }
-        else if (res_type >= 0)
+        else
             train_perc_prop(damu, res_type);
         exercise(A_STR, FALSE);
     }

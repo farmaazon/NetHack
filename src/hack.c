@@ -25,7 +25,7 @@ STATIC_DCL void FDECL(move_update, (BOOLEAN_P));
 #define TRAVP_VALID  2
 
 /* used in scaling damage according to percentage resistances */
-#define PERC_RES 100
+#define PERC_RES 100L
 
 static anything tmp_anything;
 
@@ -2130,7 +2130,7 @@ boolean pick;
                 dmg = d(4, 6);
                 if (Half_physical_damage)
                     dmg = (dmg + 1) / 2;
-                mdamageu(mtmp, dmg);
+                mdamageu(mtmp, dmg, NONE_RES);
             }
             break;
         default: /* monster surprises you. */
@@ -2999,19 +2999,36 @@ struct obj *otmp;
 }
 
 int
-scale_dmg(dmg, res)
-int dmg, res;
+scale_dmg(dmg, res_type)
+int dmg;
+uchar res_type;
 {
-    return dmg*(PERC_RES - u.uperc_props[res])/PERC_RES;
+    if (res_type == NONE_RES)
+        return dmg;
+    else
+        return dmg*(PERC_RES - u.uperc_props[res_type])/PERC_RES;
+}
+
+long
+scale_dmg_l(dmg, res_type)
+long dmg;
+uchar res_type;
+{
+    if (res_type == NONE_RES)
+        return dmg;
+    else
+        return dmg*((long)PERC_RES - (long)u.uperc_props[res_type])/(long)PERC_RES;
 }
 
 void
 train_perc_prop(dmg, res_type)
-int dmg, res_type;
+int dmg;
+uchar res_type;
 {
     const int res = u.uperc_props[res_type];
     int change, dmg_sign;
-    if (dmg == 0)
+
+    if (res_type == NONE_RES || dmg == 0)
         return;
 
     if (res == 0)
@@ -3019,9 +3036,9 @@ int dmg, res_type;
     else
     {
         dmg_sign = dmg > 0 ? 1 : -1;
-        change = dmg/res + (rnd((abs(dmg) % res)+1) < res ? dmg_sign : 0);
+        change = dmg/res + dmg_sign*(rnd(res) < abs(dmg)%res);
     }
-    u.uperc_props[res] += change;
+    u.uperc_props[res_type] += change;
 }
 
 /*hack.c*/

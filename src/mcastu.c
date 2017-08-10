@@ -182,6 +182,7 @@ boolean thinks_it_foundyou;
 boolean foundyou;
 {
     int dmg, ml = mtmp->m_lev;
+    uchar res_type = NONE_RES;
     int ret;
     int spellnum = 0;
 
@@ -291,6 +292,7 @@ boolean foundyou;
     switch (mattk->adtyp) {
     case AD_FIRE:
         pline("You're enveloped in flames.");
+        res_type = FIRE_RES;
         if (Fire_resistance) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
@@ -300,6 +302,7 @@ boolean foundyou;
         break;
     case AD_COLD:
         pline("You're covered in frost.");
+        res_type = COLD_RES;
         if (Cold_resistance) {
             shieldeff(u.ux, u.uy);
             pline("But you resist the effects.");
@@ -327,7 +330,7 @@ boolean foundyou;
     }
     }
     if (dmg)
-        mdamageu(mtmp, dmg);
+        mdamageu(mtmp, dmg, res_type);
     return (ret);
 }
 
@@ -347,6 +350,7 @@ struct monst *mtmp;
 int dmg;
 int spellnum;
 {
+    uchar res_type = NONE_RES;
     if (dmg == 0 && !is_undirected_spell(AD_SPEL, spellnum)) {
         impossible("cast directed wizard spell (%d) with dmg=0?", spellnum);
         return;
@@ -501,7 +505,7 @@ int spellnum;
     }
 
     if (dmg)
-        mdamageu(mtmp, dmg);
+        mdamageu(mtmp, dmg, res_type);
 }
 
 STATIC_OVL
@@ -511,6 +515,7 @@ struct monst *mtmp;
 int dmg;
 int spellnum;
 {
+    uchar res_type = NONE_RES;
     if (dmg == 0 && !is_undirected_spell(AD_CLRC, spellnum)) {
         impossible("cast directed cleric spell (%d) with dmg=0?", spellnum);
         return;
@@ -533,6 +538,7 @@ int spellnum;
             dmg = 0;
         } else
             dmg = d(8, 6);
+        res_type = FIRE_RES;
         if (Half_spell_damage)
             dmg = (dmg + 1) / 2;
         burn_away_slime();
@@ -556,6 +562,7 @@ int spellnum;
             dmg = d(8, 6);
         if (Half_spell_damage)
             dmg = (dmg + 1) / 2;
+        res_type = SHOCK_RES;
         destroy_item(WAND_CLASS, AD_ELEC);
         destroy_item(RING_CLASS, AD_ELEC);
         (void) flashburn((long) rnd(100));
@@ -720,7 +727,7 @@ int spellnum;
     }
 
     if (dmg)
-        mdamageu(mtmp, dmg);
+        mdamageu(mtmp, dmg, res_type);
 }
 
 STATIC_DCL

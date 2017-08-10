@@ -806,7 +806,13 @@ struct permonst *mdat;
         You_feel("a slight illness.");
         return FALSE;
     } else {
-        make_sick(Sick ? Sick / 3L + 1L : (long) rn1(ACURR(A_CON), 20),
+        register long sick_turns = 0;
+        if (Sick)
+            sick_turns = Sick - scale_dmg_l(Sick*2L/3L, SICK_RES);
+        else
+            sick_turns = (long)rn1(ACURR(A_CON), 20);
+
+        make_sick(sick_turns,
                   mdat->mname, TRUE, SICK_NONVOMITABLE);
         return TRUE;
     }
@@ -910,6 +916,7 @@ register struct attack *mattk;
     register struct permonst *mdat = mtmp->data;
     register int uncancelled, ptmp;
     int dmg, armpro, permdmg;
+    uchar res_type;
     char buf[BUFSZ];
     struct permonst *olduasmon = youmonst.data;
     int res;
@@ -1026,6 +1033,8 @@ register struct attack *mattk;
         hitmsg(mtmp, mattk);
         if (!diseasemu(mdat))
             dmg = 0;
+        else
+            train_perc_prop(3, SICK_RES);
         break;
     case AD_FIRE:
         hitmsg(mtmp, mattk);
@@ -1040,7 +1049,8 @@ register struct attack *mattk;
             } else if (Fire_resistance) {
                 pline_The("fire doesn't feel hot!");
                 dmg = 0;
-            }
+            } else
+                res_type = FIRE_RES;
             if ((int) mtmp->m_lev > rn2(20))
                 destroy_item(SCROLL_CLASS, AD_FIRE);
             if ((int) mtmp->m_lev > rn2(20))
@@ -1058,7 +1068,8 @@ register struct attack *mattk;
             if (Cold_resistance) {
                 pline_The("frost doesn't seem cold!");
                 dmg = 0;
-            }
+            } else
+                res_type = COLD_RES;
             if ((int) mtmp->m_lev > rn2(20))
                 destroy_item(POTION_CLASS, AD_COLD);
         } else
@@ -1072,6 +1083,8 @@ register struct attack *mattk;
                 pline_The("zap doesn't shock you!");
                 dmg = 0;
             }
+            else
+                res_type = SHOCK_RES;
             if ((int) mtmp->m_lev > rn2(20))
                 destroy_item(WAND_CLASS, AD_ELEC);
             if ((int) mtmp->m_lev > rn2(20))
@@ -1084,11 +1097,15 @@ register struct attack *mattk;
         if (uncancelled && multi >= 0 && !rn2(5)) {
             if (Sleep_resistance)
                 break;
-            fall_asleep(-rnd(10), TRUE);
-            if (Blind)
-                You("are put to sleep!");
-            else
-                You("are put to sleep by %s!", mon_nam(mtmp));
+            register int sleep_time = scale_dmg(rnd(10), SLEEP_RES);
+            if (sleep_time) {
+                fall_asleep(-sleep_time, TRUE);
+                train_perc_prop(sleep_time, SLEEP_RES);
+                if (Blind)
+                    You("are put to sleep!");
+                else
+                    You("are put to sleep by %s!", mon_nam(mtmp));
+            }
         }
         break;
     case AD_BLND:
@@ -1136,7 +1153,7 @@ register struct attack *mattk;
         /* negative armor class doesn't reduce this damage */
         if (Half_physical_damage)
             dmg = (dmg + 1) / 2;
-        mdamageu(mtmp, dmg);
+        mdamageu(mtmp, dmg, NONE_RES);
         dmg = 0; /* don't inflict a second dose below */
 
         if (!uarmh || uarmh->otyp != DUNCE_CAP) {
@@ -1172,8 +1189,11 @@ register struct attack *mattk;
         break;
     case AD_DRLI:
         hitmsg(mtmp, mattk);
-        if (uncancelled && !rn2(3) && !Drain_resistance) {
+        if (uncancelled && !rn2(3) && !Drain_resistance &&
+                rnd(100) > u.uperc_props[DRAIN_RES])
+        {
             losexp("life drainage");
+            train_perc_prop(3, DRAIN_RES);
         }
         break;
     case AD_LEGS: {
@@ -1241,6 +1261,7 @@ register struct attack *mattk;
                             kformat = KILLED_BY;
                         }
                         make_stoned(5L, (char *) 0, kformat, kname);
+                        train_perc_prop(2, STONE_RES);
                         return 1;
                         /* done_in_by(mtmp, STONING); */
                     }
@@ -1504,6 +1525,7 @@ register struct attack *mattk;
             } else {
                 pline("You're covered in %s!  It burns!", hliquid("acid"));
                 exercise(A_STR, FALSE);
+                res_type = ACID_RES;
             }
         else
             dmg = 0;
@@ -1567,7 +1589,8 @@ register struct attack *mattk;
         break;
     case AD_PEST:
         pline("%s reaches out, and you feel fever and chills.", Monnam(mtmp));
-        (void) diseasemu(mdat); /* plus the normal damage */
+        if(diseasemu(mdat)) /* plus the normal damage */
+            train_perc_prop(2, SICK_RES);
         break;
     case AD_FAMN:
         pline("%s reaches out, and your body shrivels.", Monnam(mtmp));
@@ -1686,7 +1709,7 @@ register struct attack *mattk;
             context.botl = 1;
         }
 
-        mdamageu(mtmp, dmg);
+        mdamageu(mtmp, dmg, res_type);
     }
 
     if (dmg)
@@ -1723,6 +1746,7 @@ register struct attack *mattk;
 {
     struct trap *t = t_at(u.ux, u.uy);
     int tmp = d((int) mattk->damn, (int) mattk->damd);
+    uchar res_type = NONE_RES;
     int tim_tmp;
     register struct obj *otmp2;
     int i;
@@ -1865,6 +1889,7 @@ register struct attack *mattk;
                 pline("Ouch!  You've been slimed!");
             else
                 You("are covered in slime!  It burns!");
+            res_type = ACID_RES;
             exercise(A_STR, FALSE);
         }
         break;
@@ -1892,6 +1917,8 @@ register struct attack *mattk;
                 ugolemeffects(AD_ELEC, tmp);
                 tmp = 0;
             }
+            else
+                res_type = SHOCK_RES;
         } else
             tmp = 0;
         break;
@@ -1902,8 +1929,10 @@ register struct attack *mattk;
                 You_feel("mildly chilly.");
                 ugolemeffects(AD_COLD, tmp);
                 tmp = 0;
-            } else
+            } else {
+                res_type = COLD_RES;
                 You("are freezing to death!");
+            }
         } else
             tmp = 0;
         break;
@@ -1914,8 +1943,10 @@ register struct attack *mattk;
                 You_feel("mildly hot.");
                 ugolemeffects(AD_FIRE, tmp);
                 tmp = 0;
-            } else
+            } else {
+                res_type = FIRE_RES;
                 You("are burning to a crisp!");
+            }
             burn_away_slime();
         } else
             tmp = 0;
@@ -1923,6 +1954,8 @@ register struct attack *mattk;
     case AD_DISE:
         if (!diseasemu(mtmp->data))
             tmp = 0;
+        else
+            train_perc_prop(3, SICK_RES);
         break;
     case AD_DREN:
         /* AC magic cancellation doesn't help when engulfed */
@@ -1939,7 +1972,7 @@ register struct attack *mattk;
     if (physical_damage)
         tmp = Maybe_Half_Phys(tmp);
 
-    mdamageu(mtmp, tmp);
+    mdamageu(mtmp, tmp, res_type);
     if (tmp)
         stop_occupation();
 
@@ -1977,7 +2010,7 @@ boolean ufound;
                                                       : "thin air");
     else {
         register int tmp = d((int) mattk->damn, (int) mattk->damd);
-        register int res_type = -1;
+        register uchar res_type = NONE_RES;
         register boolean not_affected = defends((int) mattk->adtyp, uwep);
 
         hitmsg(mtmp, mattk);
@@ -2011,10 +2044,7 @@ boolean ufound;
                     burn_away_slime();
                 if (physical_damage)
                     tmp = Maybe_Half_Phys(tmp);
-                if (res_type >= 0)
-                    tmp = scale_dmg(tmp, res_type);
-                mdamageu(mtmp, tmp);
-                train_perc_prop(tmp, res_type);
+                mdamageu(mtmp, tmp, res_type);
             }
             break;
 
@@ -2230,7 +2260,7 @@ register struct attack *mattk;
                 if (lev > rn2(25))
                     destroy_item(SPBOOK_CLASS, AD_FIRE);
                 if (dmg)
-                    mdamageu(mtmp, dmg);
+                    mdamageu(mtmp, dmg, FIRE_RES);
             }
         }
         break;
@@ -2281,19 +2311,24 @@ register struct attack *mattk;
 
 /* mtmp hits you for n points damage */
 void
-mdamageu(mtmp, n)
+mdamageu(mtmp, n, res_type)
 register struct monst *mtmp;
 register int n;
+uchar res_type;
 {
+    n = scale_dmg(n, res_type);
     context.botl = 1;
     if (Upolyd) {
         u.mh -= n;
         if (u.mh < 1)
             rehumanize();
+        train_perc_prop(n, res_type);
     } else {
         u.uhp -= n;
         if (u.uhp < 1)
             done_in_by(mtmp, DIED);
+        else
+            train_perc_prop(n, res_type);
     }
 }
 

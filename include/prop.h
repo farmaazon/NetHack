@@ -11,6 +11,7 @@
  *        Property #0 is not used.
  */
 /* Resistances to troubles */
+#define NONE_RES 0
 #define FIRE_RES 1
 #define COLD_RES 2
 #define SLEEP_RES 3

@@ -851,8 +851,9 @@ E int NDECL(max_capacity);
 E boolean FDECL(check_capacity, (const char *));
 E int FDECL(inv_cnt, (BOOLEAN_P));
 E long FDECL(money_cnt, (struct obj *));
-E int FDECL(scale_dmg, (int, int));
-E void FDECL(train_perc_prop, (int, int));
+E int FDECL(scale_dmg, (int, uchar));
+E long FDECL(scale_dmg_l, (long, uchar));
+E void FDECL(train_perc_prop, (int, uchar));
 
 /* ### hacklib.c ### */
 
@@ -1172,7 +1173,7 @@ E int FDECL(mattacku, (struct monst *));
 E int FDECL(magic_negation, (struct monst *));
 E boolean NDECL(gulp_blnd_check);
 E int FDECL(gazemu, (struct monst *, struct attack *));
-E void FDECL(mdamageu, (struct monst *, int));
+E void FDECL(mdamageu, (struct monst *, int, uchar));
 E int FDECL(could_seduce, (struct monst *, struct monst *, struct attack *));
 E int FDECL(doseduce, (struct monst *));
 
