@@ -508,8 +508,7 @@ nh_timeout()
                     incr_itimeout(&HSleepy, rnd(100));
                 } else if (Sleepy) {
                     You("fall asleep.");
-                    sleeptime = rnd(20);
-                    fall_asleep(-sleeptime, TRUE);
+                    fall_asleep(-rnd(20), TRUE);
                     incr_itimeout(&HSleepy, sleeptime + rnd(100));
                 }
                 break;
@@ -566,6 +565,11 @@ fall_asleep(how_long, wakeup_msg)
 int how_long;
 boolean wakeup_msg;
 {
+    if (wakeup_msg)
+    {
+        how_long = -scale_dmg(-how_long, SLEEP_RES);
+        train_perc_prop(-how_long, SLEEP_RES);
+    }
     stop_occupation();
     nomul(how_long);
     multi_reason = "sleeping";

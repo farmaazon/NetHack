@@ -2357,9 +2357,7 @@ uchar *res_type_out;
             You("don't feel sleepy!");
         } else {
             pline_The("sleep ray hits you!");
-            register int length = scale_dmg(rnd(50), SLEEP_RES);
-            fall_asleep(-length, TRUE);
-            train_perc_prop(length, SLEEP_RES);
+            fall_asleep(-rnd(50), TRUE);
         }
         break;
 
@@ -3686,9 +3684,7 @@ xchar sx, sy;
             shieldeff(u.ux, u.uy);
             You("don't feel sleepy.");
         } else {
-            register int sleep_time = scale_dmg(d(nd, 25), SLEEP_RES);
             fall_asleep(-d(nd, 25), TRUE); /* sleep ray */
-            train_perc_prop(sleep_time, SLEEP_RES);
         }
         break;
     case ZT_DEATH:
