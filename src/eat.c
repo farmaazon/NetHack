@@ -855,6 +855,7 @@ register struct permonst *ptr;
         return; /* failed die roll */
 
     switch (type) {
+#if 0
     case FIRE_RES:
         debugpline0("Trying to give fire resistance");
         if (!(HFire_resistance & FROMOUTSIDE)) {
@@ -900,6 +901,7 @@ register struct permonst *ptr;
             HPoison_resistance |= FROMOUTSIDE;
         }
         break;
+#endif
     case TELEPORT:
         debugpline0("Trying to give teleport");
         if (!(HTeleportation & FROMOUTSIDE)) {
