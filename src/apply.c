@@ -3209,7 +3209,6 @@ struct obj *obj;
     register int i, x, y;
     register struct monst *mon;
     int dmg, damage;
-    uchar res_type = NONE_RES;
     boolean affects_objects;
     boolean shop_damage = FALSE;
     boolean fillmsg = FALSE;

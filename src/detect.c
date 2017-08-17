@@ -1565,7 +1565,7 @@ boolean via_warning;
     }
     if (!canspotmon(mtmp)) {
         if (mtmp->mundetected
-            && (is_hider(mtmp->data) || mtmp->data->mlet == S_EEL))
+            && (is_hider(mtmp->data) || mtmp->data->mlet == S_EEL)) {
             if (via_warning) {
                 Your("warning senses cause you to take a second %s.",
                      Blind ? "to check nearby" : "look close by");
@@ -1574,6 +1574,7 @@ boolean via_warning;
             mtmp->mundetected = 0;
             newsym(x, y);
             goto find;
+        }
     }
     return 0;
 }

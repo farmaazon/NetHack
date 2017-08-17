@@ -916,7 +916,7 @@ register struct attack *mattk;
     register struct permonst *mdat = mtmp->data;
     register int uncancelled, ptmp;
     int dmg, armpro, permdmg;
-    uchar res_type;
+    uchar res_type = NONE_RES;
     char buf[BUFSZ];
     struct permonst *olduasmon = youmonst.data;
     int res;
