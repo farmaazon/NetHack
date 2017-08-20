@@ -2995,4 +2995,102 @@ struct obj *otmp;
     return 0L;
 }
 
+
+long
+increased_fraction(prop, value)
+long prop, value;
+{
+    value = min(FRACTION - (prop & FRACTION), value);
+    value = max(-(prop & FRACTION), value);
+    return prop | (((prop & FRACTION) + value) & FRACTION);
+}
+
+
+void
+set_fraction(prop_l, fraction)
+long *prop_l, fraction;
+{
+    if (fraction < 0)
+        return;
+    *prop_l ^= *prop_l & FRACTION;
+    *prop_l |= fraction & FRACTION;
+}
+
+
+long
+prop_fraction(prop)
+struct prop *prop;
+{
+    long gained;
+
+    if (!prop)
+        return 0;
+
+    if (prop->blocked)
+        return 0;
+    else if (prop->intrinsic & FROMFORM)
+        return FRACTION;
+    else if (prop->extrinsic & W_ARM) /* dragon scale mails at this moment */
+        gained = (7*FRACTION)/8;
+    else if (prop->extrinsic || prop->intrinsic & TIMEOUT)
+        gained = FRACTION/2;
+    else if (prop->intrinsic & (FROMRACE | FROMEXPER))
+        gained = FRACTION/4;
+    else
+        gained = 0;
+
+    return increased_fraction(prop->intrinsic, gained) & FRACTION;
+}
+
+
+
+/* scale number (usually damage) according to property fraction */
+long
+scale_by_fraction(dmg, fraction)
+int dmg;
+long fraction;
+{
+    return dmg - fraction*(long)dmg/FULL_PROPERTY;
+}
+
+
+int
+scale_by_prop(dmg, prop)
+int dmg;
+struct prop *prop;
+{
+    if (prop || !dmg)
+        return dmg;
+    return scale_by_fraction(dmg, prop_fraction(prop));
+}
+
+
+void
+train(dmg, prop)
+long dmg;
+struct prop *prop;
+{
+    long value, rel_value, sign, change;
+    long x;
+    if (!prop || dmg == 0)
+        return;
+
+    value = rel_value = prop_fraction(prop);
+    if (value < FULL_PROPERTY) {
+        sign = 1;
+    } else if (value == FULL_PROPERTY) {
+        sign = rn2(2) ? 1 : -1;
+    } else /*if (value > FULLPROPERTY)*/ {
+        sign = -1;
+        rel_value = 2*FULL_PROPERTY - rel_value;
+    }
+    rel_value = max(0, rel_value);
+    change = 0;
+    for (x = dmg - rn2(rel_value+1); x > 0; x /= 2)
+        change += sign*FRACTION_UNIT;
+
+    change = max(change, -value);
+    prop->intrinsic = increased_fraction(prop->intrinsic, change);
+}
+
 /*hack.c*/
