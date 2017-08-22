@@ -148,7 +148,7 @@ dosit()
             return 1;
         }
         pline_The("%s burns you!", hliquid("lava"));
-        losehp(d((Fire_resistance ? 2 : 10), 10), /* lava damage */
+        losehp(resist_dmg(d(8, 10), FIRE_RES) + d(2, 10), /* lava damage */
                "sitting on lava", KILLED_BY);
     } else if (is_ice(u.ux, u.uy)) {
         You(sit_message, defsyms[S_ice].explanation);

@@ -71,7 +71,7 @@ unsigned gpflags;
         } else if (is_lava(x, y)) {
             if (mtmp == &youmonst)
                 return (Levitation || Flying
-                        || (Fire_resistance && Wwalking && uarmf
+                        || (FFire_resistance >= FULL_PROPERTY && Wwalking && uarmf
                             && uarmf->oerodeproof)
                         || (Upolyd && likes_lava(youmonst.data)));
             else

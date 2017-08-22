@@ -16,6 +16,7 @@
  * EXxx refers to extrinsic bitfields from worn objects.
  * BXxx refers to the cause of the property being blocked.
  * Xxx refers to any source, including polymorph forms.
+ * FXxx is a fraction of Xxx
  * [Post-3.4.3: HXxx now includes a FROMFORM bit to handle
  * intrinsic conferred by being polymorphed.]
  */
@@ -26,7 +27,7 @@
 /* With intrinsics and extrinsics */
 #define HFire_resistance u.uprops[FIRE_RES].intrinsic
 #define EFire_resistance u.uprops[FIRE_RES].extrinsic
-#define Fire_resistance (HFire_resistance || EFire_resistance)
+#define FFire_resistance prop_fraction(&u.uprops[FIRE_RES])
 
 #define HCold_resistance u.uprops[COLD_RES].intrinsic
 #define ECold_resistance u.uprops[COLD_RES].extrinsic
@@ -365,5 +366,22 @@
 #define Unaware (multi < 0 && (unconscious() || is_fainted()))
 
 #define Hate_silver (u.ulycn >= LOW_PM || hates_silver(youmonst.data))
+
+#define Inform_about_fraction(fraction,none,noticeable,considerable,full,overfull) \
+    do {                                                                           \
+        if ((fraction) < (FULL_PROPERTY+99)/100) {                                          \
+            none;                                                                  \
+        } else if (fraction < FULL_PROPERTY/2) {                                   \
+            noticeable;                                                            \
+        } else if (fraction < FULL_PROPERTY) {                                     \
+            considerable;                                                          \
+        } else if (fraction == FULL_PROPERTY) {                                    \
+            full;                                                                  \
+        } else {                                                                   \
+            overfull;                                                              \
+        }                                                                          \
+    } while(0)
+#define Fraction_test(fraction) (rn2(FULL_PROPERTY/FRACTION_UNIT) < (fraction)/FRACTION_UNIT)
+
 
 #endif /* YOUPROP_H */

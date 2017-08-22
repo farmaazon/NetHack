@@ -718,7 +718,7 @@ gcrownu()
 #define ok_wep(o) ((o) && ((o)->oclass == WEAPON_CLASS || is_weptool(o)))
 
     HSee_invisible |= FROMOUTSIDE;
-    HFire_resistance |= FROMOUTSIDE;
+    HFire_resistance = increased_fraction(HFire_resistance, FULL_PROPERTY/4);
     HCold_resistance |= FROMOUTSIDE;
     HShock_resistance |= FROMOUTSIDE;
     HSleep_resistance |= FROMOUTSIDE;

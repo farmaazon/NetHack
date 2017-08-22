@@ -1014,6 +1014,9 @@ int alone;
 void
 rehumanize()
 {
+    /* You do not train resistances if lose form */
+    u.utraining = 0;
+    u.utrained_prop = NULL;
     /* You can't revert back while unchanging */
     if (Unchanging && (u.mh < 1)) {
         killer.format = NO_KILLER_PREFIX;

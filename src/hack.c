@@ -2823,8 +2823,9 @@ boolean k_format;
         context.botl = 1;
         if (u.mh < 1)
             rehumanize();
-        else if (n > 0 && u.mh * 10 < u.mhmax && Unchanging)
+        else  if (n > 0 && u.mh * 10 < u.mhmax && Unchanging)
             maybe_wail();
+        train();
         return;
     }
 
@@ -2840,9 +2841,9 @@ boolean k_format;
             Strcpy(killer.name, knam ? knam : "");
         You("die...");
         done(DIED);
-    } else if (n > 0 && u.uhp * 10 < u.uhpmax) {
+    } else if (n > 0 && u.uhp * 10 < u.uhpmax)
         maybe_wail();
-    }
+    train();
 }
 
 int
@@ -3002,7 +3003,7 @@ long prop, value;
 {
     value = min(FRACTION - (prop & FRACTION), value);
     value = max(-(prop & FRACTION), value);
-    return prop | (((prop & FRACTION) + value) & FRACTION);
+    return (prop^(prop & FRACTION)) | (((prop & FRACTION) + value) & FRACTION);
 }
 
 
@@ -3029,13 +3030,13 @@ struct prop *prop;
     if (prop->blocked)
         return 0;
     else if (prop->intrinsic & FROMFORM)
-        return FRACTION;
+        return FULL_PROPERTY;
     else if (prop->extrinsic & W_ARM) /* dragon scale mails at this moment */
-        gained = (7*FRACTION)/8;
+        gained = (7*FULL_PROPERTY)/8;
     else if (prop->extrinsic || prop->intrinsic & TIMEOUT)
-        gained = FRACTION/2;
+        gained = FULL_PROPERTY/2;
     else if (prop->intrinsic & (FROMRACE | FROMEXPER))
-        gained = FRACTION/4;
+        gained = FULL_PROPERTY/4;
     else
         gained = 0;
 
@@ -3045,52 +3046,66 @@ struct prop *prop;
 
 
 /* scale number (usually damage) according to property fraction */
-long
+int
 scale_by_fraction(dmg, fraction)
 int dmg;
 long fraction;
 {
-    return dmg - fraction*(long)dmg/FULL_PROPERTY;
+    return fraction*(long)dmg/FULL_PROPERTY;
 }
 
 
 int
-scale_by_prop(dmg, prop)
-int dmg;
-struct prop *prop;
+resist_dmg(dmg, prop_idx)
+int dmg, prop_idx;
 {
-    if (prop || !dmg)
-        return dmg;
-    return scale_by_fraction(dmg, prop_fraction(prop));
+    if (!dmg)
+        return 0;
+    set_trained_prop(prop_idx);
+    u.utraining = (long)dmg;
+
+    return dmg - scale_by_fraction(dmg, prop_fraction(&u.uprops[prop_idx]));
 }
 
 
 void
-train(dmg, prop)
-long dmg;
+set_trained_prop(prop_idx)
+int prop_idx;
+{
+    u.utrained_prop = &u.uprops[prop_idx];
+}
+
+void
+train_prop(x, prop)
+int x;
 struct prop *prop;
 {
-    long value, rel_value, sign, change;
-    long x;
-    if (!prop || dmg == 0)
+    long value, to_increase, difficulty, change;
+     if (!prop || x == 0)
         return;
 
-    value = rel_value = prop_fraction(prop);
-    if (value < FULL_PROPERTY) {
-        sign = 1;
-    } else if (value == FULL_PROPERTY) {
-        sign = rn2(2) ? 1 : -1;
-    } else /*if (value > FULLPROPERTY)*/ {
-        sign = -1;
-        rel_value = 2*FULL_PROPERTY - rel_value;
-    }
-    rel_value = max(0, rel_value);
+    value = prop_fraction(prop);
+
     change = 0;
-    for (x = dmg - rn2(rel_value+1); x > 0; x /= 2)
-        change += sign*FRACTION_UNIT;
+    do {
+        to_increase = FULL_PROPERTY - value - change;
+        difficulty = (FULL_PROPERTY - labs(to_increase))/FRACTION_UNIT/3 + 1;
+        x -= rnd(difficulty) + 3;
+        if (x > 0 && to_increase != 0)
+            change += (to_increase > 0 ? 1 : -1)*rnd((labs(to_increase)/FRACTION_UNIT+15)/16)*FRACTION_UNIT;
+    } while(x > 0 && to_increase != 0 && change > -value);
 
     change = max(change, -value);
     prop->intrinsic = increased_fraction(prop->intrinsic, change);
+}
+
+
+void
+train(VOID_ARGS)
+{
+    train_prop(u.utraining, u.utrained_prop);
+    u.utraining = 0;
+    u.utrained_prop = 0;
 }
 
 /*hack.c*/

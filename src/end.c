@@ -1035,8 +1035,11 @@ int how;
     if (!killer.name[0] || how >= PANICKED)
         Strcpy(killer.name, deaths[how]);
 
-    if (how < PANICKED)
+    if (how < PANICKED) {
+        u.utraining = 0;
+        u.utrained_prop = NULL;
         u.umortality++;
+    }
     if (Lifesaved && (how <= GENOCIDED)) {
         pline("But wait...");
         makeknown(AMULET_OF_LIFE_SAVING);

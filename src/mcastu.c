@@ -291,11 +291,11 @@ boolean foundyou;
     switch (mattk->adtyp) {
     case AD_FIRE:
         pline("You're enveloped in flames.");
-        if (Fire_resistance) {
-            shieldeff(u.ux, u.uy);
-            pline("But you resist the effects.");
-            dmg = 0;
-        }
+        Inform_about_fraction(FFire_resistance,,,
+            shieldeff(u.ux, u.uy); pline("But you resist the effects."),
+            shieldeff(u.ux, u.uy); pline_The("fire does not harm you"),
+            pline_The("fire heals you"));
+        dmg = resist_dmg(dmg, FIRE_RES);
         burn_away_slime();
         break;
     case AD_COLD:
@@ -528,11 +528,9 @@ int spellnum;
         break;
     case CLC_FIRE_PILLAR:
         pline("A pillar of fire strikes all around you!");
-        if (Fire_resistance) {
+        if (FFire_resistance >= FULL_PROPERTY/2)
             shieldeff(u.ux, u.uy);
-            dmg = 0;
-        } else
-            dmg = d(8, 6);
+        dmg = resist_dmg(d(8, 6), FIRE_RES);
         if (Half_spell_damage)
             dmg = (dmg + 1) / 2;
         burn_away_slime();

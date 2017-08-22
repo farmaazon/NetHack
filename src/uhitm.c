@@ -2508,14 +2508,18 @@ boolean wep_was_destroyed;
             break;
         case AD_FIRE:
             if (monnear(mon, u.ux, u.uy)) {
-                if (Fire_resistance) {
+                if (FFire_resistance >= FULL_PROPERTY/2)
                     shieldeff(u.ux, u.uy);
-                    You_feel("mildly warm.");
-                    ugolemeffects(AD_FIRE, tmp);
-                    break;
-                }
-                You("are suddenly very hot!");
-                mdamageu(mon, tmp); /* fire damage */
+
+                Inform_about_fraction(FFire_resistance,
+                                      You("are suddenly very hot!"),
+                                      You("are suddenly very hot!"),
+                                      You_feel("mildly warm."),
+                                      ,
+                                      You_feel("nicely warm.")
+                                      );
+                ugolemeffects(AD_FIRE, tmp);
+                mdamageu(mon, resist_dmg(tmp, FIRE_RES)); /* fire damage */
             }
             break;
         case AD_ELEC:

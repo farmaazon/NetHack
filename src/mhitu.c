@@ -1037,9 +1037,12 @@ register struct attack *mattk;
                 /* KMH -- this is okay with unchanging */
                 rehumanize();
                 break;
-            } else if (Fire_resistance) {
-                pline_The("fire doesn't feel hot!");
-                dmg = 0;
+            } else {
+                Inform_about_fraction(FFire_resistance,,,
+                    pline_The("fire doesn't feel hot!"),
+                    pline_The("fire doesn't harm you!"),
+                    You_feel("better!"));
+                dmg = resist_dmg(dmg, FIRE_RES);
             }
             if ((int) mtmp->m_lev > rn2(20))
                 destroy_item(SCROLL_CLASS, AD_FIRE);
@@ -1909,13 +1912,15 @@ register struct attack *mattk;
         break;
     case AD_FIRE:
         if (!mtmp->mcan && rn2(2)) {
-            if (Fire_resistance) {
-                shieldeff(u.ux, u.uy);
-                You_feel("mildly hot.");
-                ugolemeffects(AD_FIRE, tmp);
-                tmp = 0;
-            } else
-                You("are burning to a crisp!");
+            Inform_about_fraction(FFire_resistance,
+                                  You("are burning to a crisp!"),
+                                  pline("Aah! It's very hot here!"),
+                                  shieldeff(u.ux, u.uy); You("feel hot!"),
+                                  shieldeff(u.ux, u.uy); You_feel("mildly hot."),
+                                  You_feel("relaxed")
+                                  );
+            ugolemeffects(AD_FIRE, tmp);
+            tmp = resist_dmg(tmp, FIRE_RES);
             burn_away_slime();
         } else
             tmp = 0;
@@ -1988,13 +1993,14 @@ boolean ufound;
             goto common;
         case AD_FIRE:
             physical_damage = FALSE;
-            not_affected |= Fire_resistance;
+            tmp = resist_dmg(tmp, FIRE_RES);
             goto common;
         case AD_ELEC:
             physical_damage = FALSE;
             not_affected |= Shock_resistance;
         common:
 
+            not_affected |= tmp == 0;
             if (!not_affected) {
                 if (ACURR(A_DEX) > rnd(20)) {
                     You("duck some of the blast.");
@@ -2211,10 +2217,13 @@ register struct attack *mattk;
 
                 pline("%s attacks you with a fiery gaze!", Monnam(mtmp));
                 stop_occupation();
-                if (Fire_resistance) {
-                    pline_The("fire doesn't feel hot!");
-                    dmg = 0;
-                }
+                Inform_about_fraction(FFire_resistance,,,
+                    pline_The("fire doesn't feel hot!"),
+                    pline_The("fire doesn't harm you!"),
+                    You_feel("better!"));
+
+                dmg = resist_dmg(dmg, FIRE_RES);
+
                 burn_away_slime();
                 if (lev > rn2(20))
                     destroy_item(SCROLL_CLASS, AD_FIRE);
@@ -2288,6 +2297,7 @@ register int n;
         if (u.uhp < 1)
             done_in_by(mtmp, DIED);
     }
+    train();
 }
 
 /* returns 0 if seduction impossible,

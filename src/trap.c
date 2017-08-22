@@ -3006,7 +3006,7 @@ dofiretrap(box)
 struct obj *box; /* null for floor trap */
 {
     boolean see_it = !Blind;
-    int num, alt;
+    int num, alt, abused_hp = 0;
 
     /* Bug: for box case, the equivalent of burn_floor_objects() ought
      * to be done upon its contents.
@@ -3015,18 +3015,17 @@ struct obj *box; /* null for floor trap */
     if ((box && !carried(box)) ? is_pool(box->ox, box->oy) : Underwater) {
         pline("A cascade of steamy bubbles erupts from %s!",
               the(box ? xname(box) : surface(u.ux, u.uy)));
-        if (Fire_resistance)
+        if (FFire_resistance >= FULL_PROPERTY)
             You("are uninjured.");
-        else
-            losehp(rnd(3), "boiling water", KILLED_BY);
+        losehp(resist_dmg(rnd(3), FIRE_RES), "boiling water", KILLED_BY);
         return;
     }
     pline("A %s %s from %s!", tower_of_flame, box ? "bursts" : "erupts",
           the(box ? xname(box) : surface(u.ux, u.uy)));
-    if (Fire_resistance) {
+    if (FFire_resistance > FULL_PROPERTY/2)
         shieldeff(u.ux, u.uy);
-        num = rn2(2);
-    } else if (Upolyd) {
+    set_trained_prop(FIRE_RES);
+    if (Upolyd) {
         num = d(2, 4);
         switch (u.umonnum) {
         case PM_PAPER_GOLEM:
@@ -3047,13 +3046,21 @@ struct obj *box; /* null for floor trap */
         }
         if (alt > num)
             num = alt;
-        if (u.mhmax > mons[u.umonnum].mlevel)
-            u.mhmax -= rn2(min(u.mhmax, num + 1)), context.botl = 1;
+        if (u.mhmax > mons[u.umonnum].mlevel) {
+            abused_hp = rn2(min(u.mhmax, num + 1));
+            u.mhmax -= scale_by_fraction(abused_hp, FULL_PROPERTY - FFire_resistance);
+            context.botl = 1;
+        }
     } else {
         num = d(2, 4);
-        if (u.uhpmax > u.ulevel)
-            u.uhpmax -= rn2(min(u.uhpmax, num + 1)), context.botl = 1;
+        if (u.uhpmax > u.ulevel) {
+            abused_hp = rn2(min(u.uhpmax, num + 1));
+            u.uhpmax -= scale_by_fraction(abused_hp, FULL_PROPERTY - FFire_resistance);
+            context.botl = 1;
+        }
     }
+    u.utraining = num + abused_hp*8;
+    num = scale_by_fraction(num, FULL_PROPERTY - FFire_resistance);
     if (!num)
         You("are uninjured.");
     else
@@ -5011,14 +5018,14 @@ boolean
 lava_effects()
 {
     register struct obj *obj, *obj2;
-    int dmg = d(6, 6); /* only applicable for water walking */
+    int dmg = resist_dmg(Wwalking ? d(6, 6) : u.uhpmax, FIRE_RES);
     boolean usurvive, boil_away;
 
     burn_away_slime();
     if (likes_lava(youmonst.data))
         return FALSE;
 
-    usurvive = Fire_resistance || (Wwalking && dmg < u.uhp);
+    usurvive = dmg < u.uhp;
     /*
      * A timely interrupt might manage to salvage your life
      * but not your gear.  For scrolls and potions this
@@ -5051,13 +5058,17 @@ lava_effects()
         iflags.in_lava_effects--;
     }
 
-    if (!Fire_resistance) {
+    if (Wwalking && usurvive) {
+        Inform_about_fraction(FFire_resistance,
+                              pline_The("%s here burns you!", hliquid("lava")),
+                              pline_The("%s here burns you.", hliquid("lava")),
+                              pline_The("%s here burns you slightly", hliquid("lava")),
+                              ,
+                              pline_The("%s here heals you!", hliquid("lava")));
+        losehp(dmg, lava_killer, KILLED_BY); /* lava damage */
+    } else if (!usurvive) {
         if (Wwalking) {
             pline_The("%s here burns you!", hliquid("lava"));
-            if (usurvive) {
-                losehp(dmg, lava_killer, KILLED_BY); /* lava damage */
-                goto burn_stuff;
-            }
         } else
             You("fall into the %s!", hliquid("lava"));
 
@@ -5110,22 +5121,20 @@ lava_effects()
         }
         You("find yourself back on solid %s.", surface(u.ux, u.uy));
         return TRUE;
-    } else if (!Wwalking && (!u.utrap || u.utraptype != TT_LAVA)) {
-        boil_away = !Fire_resistance;
-        /* if not fire resistant, sink_into_lava() will quickly be fatal;
+    } else if (!u.utrap || u.utraptype != TT_LAVA) {
+        boil_away = FFire_resistance < FULL_PROPERTY/2;
+        /* if not suffitiently fire resistant, sink_into_lava() will quickly be fatal;
            hero needs to escape immediately */
-        u.utrap = rn1(4, 4) + ((boil_away ? 2 : rn1(4, 12)) << 8);
+        u.utrap = rn1(4, 4) + (scale_by_fraction(rn1(4, 12), FFire_resistance) << 8);
         u.utraptype = TT_LAVA;
         You("sink into the %s%s!", hliquid("lava"),
             !boil_away
             ? ", but it only burns slightly"
             : " and are about to be immolated");
         if (u.uhp > 1)
-            losehp(!boil_away ? 1 : (u.uhp / 2), lava_killer,
-                   KILLED_BY); /* lava damage */
+            losehp(dmg, lava_killer, KILLED_BY); /* lava damage */
     }
 
-burn_stuff:
     destroy_item(SCROLL_CLASS, AD_FIRE);
     destroy_item(SPBOOK_CLASS, AD_FIRE);
     destroy_item(POTION_CLASS, AD_FIRE);
@@ -5147,8 +5156,8 @@ sink_into_lava()
            enough to become stuck in lava, but it can happen without
            resistance if water walking boots allow survival and then
            get burned up; u.utrap time will be quite short in that case */
-        if (!Fire_resistance)
-            u.uhp = (u.uhp + 2) / 3;
+        u.uhp -= resist_dmg(u.uhp - (u.uhp + 2) / 3, FIRE_RES);
+        train();
 
         u.utrap -= (1 << 8);
         if (u.utrap < (1 << 8)) {

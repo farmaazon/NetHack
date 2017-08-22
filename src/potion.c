@@ -1064,7 +1064,8 @@ register struct obj *otmp;
             } else {
                 You("burn your %s.", body_part(FACE));
                 /* fire damage */
-                losehp(d(Fire_resistance ? 1 : 3, 4), "burning potion of oil",
+                losehp(resist_dmg(d(3, 4), FIRE_RES),
+                       "burning potion of oil",
                        KILLED_BY_AN);
             }
         } else if (otmp->cursed)

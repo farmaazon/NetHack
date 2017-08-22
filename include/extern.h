@@ -116,6 +116,7 @@ E boolean FDECL(extremeattr, (int));
 E void FDECL(adjalign, (int));
 E int FDECL(is_innate, (int));
 E char *FDECL(from_what, (int));
+E char *FDECL(property_percents, (int));
 E void FDECL(uchangealign, (int, int));
 
 /* ### ball.c ### */
@@ -851,6 +852,12 @@ E int NDECL(max_capacity);
 E boolean FDECL(check_capacity, (const char *));
 E int FDECL(inv_cnt, (BOOLEAN_P));
 E long FDECL(money_cnt, (struct obj *));
+E long FDECL(increased_fraction, (long, long));
+E long FDECL(prop_fraction, (struct prop *));
+E int FDECL(scale_by_fraction, (int, long));
+E int FDECL(resist_dmg, (int, int));
+E void FDECL(set_trained_prop, (int));
+E void NDECL(train);
 
 /* ### hacklib.c ### */
 

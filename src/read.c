@@ -1562,8 +1562,10 @@ struct obj *sobj; /* scroll, or fake spellbook object for scroll-like spell */
         if (!already_known)
             (void) learnscrolltyp(SCR_FIRE);
         if (confused) {
-            if (Fire_resistance) {
+            if (FFire_resistance >= FULL_PROPERTY/2)
                 shieldeff(u.ux, u.uy);
+
+            if (FFire_resistance >= FULL_PROPERTY) {
                 if (!Blind)
                     pline("Oh, look, what a pretty fire in your %s.",
                           makeplural(body_part(HAND)));
@@ -1573,6 +1575,9 @@ struct obj *sobj; /* scroll, or fake spellbook object for scroll-like spell */
             } else {
                 pline_The("scroll catches fire and you burn your %s.",
                           makeplural(body_part(HAND)));
+
+                set_trained_prop(FIRE_RES);
+                u.utraining = 4;
                 losehp(1, "scroll of fire", KILLED_BY_AN);
             }
             break;

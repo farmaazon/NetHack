@@ -856,11 +856,9 @@ register struct permonst *ptr;
 
     switch (type) {
     case FIRE_RES:
-        debugpline0("Trying to give fire resistance");
-        if (!(HFire_resistance & FROMOUTSIDE)) {
-            You(Hallucination ? "be chillin'." : "feel a momentary chill.");
-            HFire_resistance |= FROMOUTSIDE;
-        }
+        debugpline0("Trying to give fire resistance");        
+        You(Hallucination ? "be chillin'." : "feel a momentary chill.");
+        set_itimeout(&HFire_resistance, 100);
         break;
     case SLEEP_RES:
         debugpline0("Trying to give sleep resistance");

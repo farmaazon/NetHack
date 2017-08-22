@@ -20,7 +20,7 @@ extern boolean notonhead; /* for long worms */
 
 STATIC_DCL boolean FDECL(bane_applies, (const struct artifact *,
                                         struct monst *));
-STATIC_DCL int FDECL(spec_applies, (const struct artifact *, struct monst *));
+STATIC_DCL long FDECL(spec_applies, (const struct artifact *, struct monst *));
 STATIC_DCL int FDECL(arti_invoke, (struct obj *));
 STATIC_DCL boolean FDECL(Mb_hit, (struct monst * magr, struct monst *mdef,
                                 struct obj *, int *, int, BOOLEAN_P, char *));
@@ -746,8 +746,10 @@ struct monst *mon;
     return FALSE;
 }
 
-/* decide whether an artifact's special attacks apply against mtmp */
-STATIC_OVL int
+/* decide whether an artifact's special attacks apply against mtmp
+ * returns fraction of the damage inflicted
+*/
+STATIC_OVL long
 spec_applies(weap, mtmp)
 register const struct artifact *weap;
 struct monst *mtmp;
@@ -756,48 +758,49 @@ struct monst *mtmp;
     boolean yours;
 
     if (!(weap->spfx & (SPFX_DBONUS | SPFX_ATTK)))
-        return (weap->attk.adtyp == AD_PHYS);
+        return (weap->attk.adtyp == AD_PHYS)*FULL_PROPERTY;
 
     yours = (mtmp == &youmonst);
     ptr = mtmp->data;
 
     if (weap->spfx & SPFX_DMONS) {
-        return (ptr == &mons[(int) weap->mtype]);
+        return (ptr == &mons[(int) weap->mtype])*FULL_PROPERTY;
     } else if (weap->spfx & SPFX_DCLAS) {
-        return (weap->mtype == (unsigned long) ptr->mlet);
+        return (weap->mtype == (unsigned long) ptr->mlet)*FULL_PROPERTY;
     } else if (weap->spfx & SPFX_DFLAG1) {
-        return ((ptr->mflags1 & weap->mtype) != 0L);
+        return ((ptr->mflags1 & weap->mtype) != 0L)*FRACTION;
     } else if (weap->spfx & SPFX_DFLAG2) {
         return ((ptr->mflags2 & weap->mtype)
                 || (yours
                     && ((!Upolyd && (urace.selfmask & weap->mtype))
-                        || ((weap->mtype & M2_WERE) && u.ulycn >= LOW_PM))));
+                        || ((weap->mtype & M2_WERE) && u.ulycn >= LOW_PM))))*FULL_PROPERTY;
     } else if (weap->spfx & SPFX_DALIGN) {
         return yours ? (u.ualign.type != weap->alignment)
                      : (ptr->maligntyp == A_NONE
-                        || sgn(ptr->maligntyp) != weap->alignment);
+                        || sgn(ptr->maligntyp) != weap->alignment)*FULL_PROPERTY;
     } else if (weap->spfx & SPFX_ATTK) {
         struct obj *defending_weapon = (yours ? uwep : MON_WEP(mtmp));
 
         if (defending_weapon && defending_weapon->oartifact
             && defends((int) weap->attk.adtyp, defending_weapon))
-            return FALSE;
+            return 0;
         switch (weap->attk.adtyp) {
         case AD_FIRE:
-            return !(yours ? Fire_resistance : resists_fire(mtmp));
+            u.utrained_prop = &u.uprops[FIRE_RES];
+            return yours ? FULL_PROPERTY - FFire_resistance : (!resists_fire(mtmp))*FULL_PROPERTY;
         case AD_COLD:
-            return !(yours ? Cold_resistance : resists_cold(mtmp));
+            return (!(yours ? Cold_resistance : resists_cold(mtmp)))*FULL_PROPERTY;
         case AD_ELEC:
-            return !(yours ? Shock_resistance : resists_elec(mtmp));
+            return (!(yours ? Shock_resistance : resists_elec(mtmp)))*FULL_PROPERTY;
         case AD_MAGM:
         case AD_STUN:
-            return !(yours ? Antimagic : (rn2(100) < ptr->mr));
+            return (!(yours ? Antimagic : (rn2(100) < ptr->mr)))*FULL_PROPERTY;
         case AD_DRST:
-            return !(yours ? Poison_resistance : resists_poison(mtmp));
+            return (!(yours ? Poison_resistance : resists_poison(mtmp)))*FULL_PROPERTY;
         case AD_DRLI:
-            return !(yours ? Drain_resistance : resists_drli(mtmp));
+            return (!(yours ? Drain_resistance : resists_drli(mtmp)))*FULL_PROPERTY;
         case AD_STON:
-            return !(yours ? Stone_resistance : resists_ston(mtmp));
+            return (!(yours ? Stone_resistance : resists_ston(mtmp)))*FULL_PROPERTY;
         default:
             impossible("Weird weapon special attack.");
         }
@@ -829,8 +832,8 @@ struct monst *mon;
     /* no need for an extra check for `NO_ATTK' because this will
        always return 0 for any artifact which has that attribute */
 
-    if (weap && weap->attk.damn && spec_applies(weap, mon))
-        return rnd((int) weap->attk.damn);
+    if (weap && weap->attk.damn)
+        return scale_by_fraction(rnd((int) weap->attk.damn), spec_applies(weap, mon));
     return 0;
 }
 
@@ -841,21 +844,25 @@ struct obj *otmp;
 struct monst *mon;
 int tmp;
 {
+    int dbon = 0;
     register const struct artifact *weap = get_artifact(otmp);
 
     if (!weap || (weap->attk.adtyp == AD_PHYS /* check for `NO_ATTK' */
                   && weap->attk.damn == 0 && weap->attk.damd == 0))
-        spec_dbon_applies = FALSE;
+        spec_dbon_applies = 0;
     else if (otmp->oartifact == ART_GRIMTOOTH)
         /* Grimtooth has SPFX settings to warn against elves but we want its
            damage bonus to apply to all targets, so bypass spec_applies() */
-        spec_dbon_applies = TRUE;
+        spec_dbon_applies = FULL_PROPERTY;
     else
         spec_dbon_applies = spec_applies(weap, mon);
 
-    if (spec_dbon_applies)
-        return weap->attk.damd ? rnd((int) weap->attk.damd) : max(tmp, 1);
-    return 0;
+    if (spec_dbon_applies) {
+        dbon = weap->attk.damd ? rnd((int) weap->attk.damd) : max(tmp, 1);
+        if (u.utrained_prop)
+            u.utraining = dbon;
+    }
+    return dbon;
 }
 
 /* add identified artifact to discoveries list */

@@ -140,15 +140,18 @@ int expltype;
                 explmask[i][j] = 0;
 
             if (i + x - 1 == u.ux && j + y - 1 == u.uy) {
+                boolean uhurtmask = TRUE;
+                explmask[i][j] = 0;
                 switch (adtyp) {
                 case AD_PHYS:
-                    explmask[i][j] = 0;
                     break;
                 case AD_MAGM:
                     explmask[i][j] = !!Antimagic;
                     break;
                 case AD_FIRE:
-                    explmask[i][j] = !!Fire_resistance;
+                    uhurtmask = FALSE;
+                    damu = resist_dmg(damu, FIRE_RES);
+                    explmask[i][j] = FFire_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_COLD:
                     explmask[i][j] = !!Cold_resistance;
@@ -173,6 +176,8 @@ int expltype;
                     impossible("explosion type %d?", adtyp);
                     break;
                 }
+                uhurt = 2 - (uhurtmask ? explmask[i][j] : 0);
+
             }
             /* can be both you and mtmp if you're swallowed or riding */
             mtmp = m_at(i + x - 1, j + y - 1);
@@ -507,6 +512,7 @@ int expltype;
                 done((adtyp == AD_FIRE) ? BURNING : DIED);
             }
         }
+        train();
         exercise(A_STR, FALSE);
     }
 

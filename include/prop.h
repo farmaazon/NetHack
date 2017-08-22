@@ -143,7 +143,6 @@ struct prop {
 //#define HALF_PROPERTY (FULL_PROPERTY/2)
 //#define QUARTER_PROPERTY (FULL_PROPERTY/4)
 #define FRACTION_UNIT 0x00010000L
-
 };
 
 /*** Definitions for backwards compatibility ***/

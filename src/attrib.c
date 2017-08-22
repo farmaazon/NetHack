@@ -880,6 +880,19 @@ int propidx; /* special cases can have negative values */
     return buf;
 }
 
+char *
+property_percents(prop_idx)
+int prop_idx;
+{
+    static char buf[BUFSZ];
+    buf[0] = '\0';
+    if (wizard) {
+        long value = prop_fraction(&u.uprops[prop_idx]);
+        Sprintf(buf, "(%ld%% / %ld)", 100L*value / FULL_PROPERTY, value/FRACTION_UNIT);
+    }
+    return buf;
+}
+
 void
 adjabil(oldlevel, newlevel)
 int oldlevel, newlevel;

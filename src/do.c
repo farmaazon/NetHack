@@ -105,9 +105,9 @@ boolean pushing;
             } else if (lava && distu(rx, ry) <= 2) {
                 int dmg;
                 You("are hit by molten %s%c",
-                    hliquid("lava"), Fire_resistance ? '.' : '!');
+                    hliquid("lava"), FFire_resistance >= FULL_PROPERTY/2 ? '.' : '!');
                 burn_away_slime();
-                dmg = d((Fire_resistance ? 1 : 3), 6);
+                dmg = resist_dmg(d(3, 6), FIRE_RES);
                 losehp(Maybe_Half_Phys(dmg), /* lava damage */
                        "molten lava", KILLED_BY);
             } else if (!fills_up && flags.verbose

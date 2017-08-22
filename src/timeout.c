@@ -43,10 +43,10 @@ const struct propname {
     { DETECT_MONSTERS, "monster detection" },
     { SEE_INVIS, "see invisible" },
     { INVIS, "invisible" },
+    { FIRE_RES, "fire resistance" },
     /* properties beyond here don't have timed values during normal play,
        so there's no much point in trying to order them sensibly;
        they're either on or off based on equipment, role, actions, &c */
-    { FIRE_RES, "fire resistance" },
     { COLD_RES, "cold resistance" },
     { SLEEP_RES, "sleep resistance" },
     { DISINT_RES, "disintegration resistance" },
@@ -546,6 +546,9 @@ nh_timeout()
                 break;
             case DETECT_MONSTERS:
                 see_monsters();
+                break;
+            case FIRE_RES:
+                You_feel("warmer.");
                 break;
             }
         }

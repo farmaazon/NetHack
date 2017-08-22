@@ -2238,14 +2238,16 @@ boolean ordinary;
     case WAN_FIRE:
     case FIRE_HORN:
         learn_it = TRUE;
-        if (Fire_resistance) {
-            shieldeff(u.ux, u.uy);
-            You_feel("rather warm.");
-            ugolemeffects(AD_FIRE, d(12, 6));
-        } else {
-            pline("You've set yourself afire!");
-            damage = d(12, 6);
-        }
+        Inform_about_fraction(FFire_resistance,
+                              pline("You've set yourself afire!"),
+                              pline("You've set yourself afire!"),
+                              shieldeff(u.ux, u.uy); You_feel("very hot!"),
+                              shieldeff(u.ux, u.uy); You_feel("rather warm."),
+                              You_feel("pleasantly warm"));
+
+        damage = d(12, 6);
+        ugolemeffects(AD_FIRE, damage);
+        damage = resist_dmg(damage, FIRE_RES);
         burn_away_slime();
         (void) burnarmor(&youmonst);
         destroy_item(SCROLL_CLASS, AD_FIRE);
@@ -3636,13 +3638,13 @@ xchar sx, sy;
         }
         break;
     case ZT_FIRE:
-        if (Fire_resistance) {
-            shieldeff(sx, sy);
-            You("don't feel hot!");
-            ugolemeffects(AD_FIRE, d(nd, 6));
-        } else {
-            dam = d(nd, 6);
-        }
+        Inform_about_fraction(FFire_resistance,,,
+                              shieldeff(sx, sy),
+                              shieldeff(sx, sy); You("don't feel hot!"),
+                              You_feel("better!"));
+        dam = d(nd, 6);
+        ugolemeffects(AD_FIRE, dam);
+        dam = resist_dmg(dam, FIRE_RES);
         burn_away_slime();
         if (burnarmor(&youmonst)) { /* "body hit" */
             if (!rn2(3))
@@ -4672,8 +4674,7 @@ register int osym, dmgtyp;
                 skip++;
             break;
         case AD_FIRE:
-            xresist = (Fire_resistance && obj->oclass != POTION_CLASS
-                       && obj->otyp != GLOB_OF_GREEN_SLIME);
+            xresist = obj->oclass != POTION_CLASS && obj->otyp != GLOB_OF_GREEN_SLIME ? FIRE_RES : 0;
 
             if (obj->otyp == SCR_FIRE || obj->otyp == SPE_FIREBALL)
                 skip++;
@@ -4711,7 +4712,7 @@ register int osym, dmgtyp;
             }
             break;
         case AD_ELEC:
-            xresist = (Shock_resistance && obj->oclass != RING_CLASS);
+            xresist = (Shock_resistance && obj->oclass != RING_CLASS)*FULL_PROPERTY;
             quan = obj->quan;
             switch (osym) {
             case RING_CLASS:
@@ -4773,10 +4774,12 @@ register int osym, dmgtyp;
                 current_wand = 0; /* destroyed */
             for (i = 0; i < cnt; i++)
                 useup(obj);
+
             if (dmg) {
                 if (xresist)
-                    You("aren't hurt!");
-                else {
+                    dmg = resist_dmg(dmg, xresist);
+
+                if (dmg) {
                     const char *how = destroy_strings[dindx][2];
                     boolean one = (cnt == 1L);
 
@@ -4786,8 +4789,12 @@ register int osym, dmgtyp;
                         dmg = Maybe_Half_Phys(dmg);
                     losehp(dmg, one ? how : (const char *) makeplural(how),
                            one ? KILLED_BY_AN : KILLED_BY);
-                    exercise(A_STR, FALSE);
+
+                    if (!Fraction_test(FFire_resistance))
+                        exercise(A_STR, FALSE);
                 }
+                else
+                    You("aren't hurt!");
             }
         }
     }

@@ -1373,7 +1373,7 @@ doterrain(VOID_ARGS)
 static winid en_win = WIN_ERR;
 static const char You_[] = "You ", are[] = "are ", were[] = "were ",
                   have[] = "have ", had[] = "had ", can[] = "can ",
-                  could[] = "could ";
+                  could[] = "could ", will[] = "will ", would[] = "would ";
 static const char have_been[] = "have been ", have_never[] = "have never ",
                   never[] = "never ";
 
@@ -1387,6 +1387,7 @@ static const char have_been[] = "have been ", have_never[] = "have never ",
     enl_msg(You_, have_never, never, badthing, "")
 #define you_have_X(something) \
     enl_msg(You_, have, (const char *) "", something, "")
+#define you_will(attr, ps) enl_msg(You_, will, would, attr, ps)
 
 static void
 enlght_line(start, middle, end, ps)
@@ -2159,8 +2160,12 @@ int final;
         you_are("invulnerable", from_what(INVULNERABLE));
     if (Antimagic)
         you_are("magic-protected", from_what(ANTIMAGIC));
-    if (Fire_resistance)
-        you_are("fire resistant", from_what(FIRE_RES));
+
+    Inform_about_fraction(FFire_resistance,,
+                          you_are("somewhat fire resistant", property_percents(FIRE_RES)),
+                          you_are("fire_resistant", property_percents(FIRE_RES)),
+                          you_are("invulnerable to fire", property_percents(FIRE_RES)),
+                          you_will("be healed by fire", property_percents(FIRE_RES)));
     if (Cold_resistance)
         you_are("cold resistant", from_what(COLD_RES));
     if (Sleep_resistance)
