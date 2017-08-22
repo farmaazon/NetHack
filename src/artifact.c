@@ -789,7 +789,7 @@ struct monst *mtmp;
             u.utrained_prop = &u.uprops[FIRE_RES];
             return yours ? FULL_PROPERTY - FFire_resistance : (!resists_fire(mtmp))*FULL_PROPERTY;
         case AD_COLD:
-            return (!(yours ? Cold_resistance : resists_cold(mtmp)))*FULL_PROPERTY;
+            return yours ? FULL_PROPERTY - FCold_resistance : (!resists_cold(mtmp))*FULL_PROPERTY;
         case AD_ELEC:
             return (!(yours ? Shock_resistance : resists_elec(mtmp)))*FULL_PROPERTY;
         case AD_MAGM:

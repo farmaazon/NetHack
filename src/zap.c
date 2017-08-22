@@ -2260,14 +2260,16 @@ boolean ordinary;
     case SPE_CONE_OF_COLD:
     case FROST_HORN:
         learn_it = TRUE;
-        if (Cold_resistance) {
-            shieldeff(u.ux, u.uy);
-            You_feel("a little chill.");
-            ugolemeffects(AD_COLD, d(12, 6));
-        } else {
-            You("imitate a popsicle!");
-            damage = d(12, 6);
-        }
+        Inform_about_fraction(FCold_resistance,
+                              pline("imitate a popsicle!"),
+                              pline("imitate a popsicle!"),
+                              shieldeff(u.ux, u.uy); You_feel("very cold!"),
+                              shieldeff(u.ux, u.uy); You_feel("a little chill."),
+                              You_feel("a pleasant chill"));
+
+        damage = d(12, 6);
+        ugolemeffects(AD_COLD, damage);
+        damage = resist_dmg(damage, COLD_RES);
         destroy_item(POTION_CLASS, AD_COLD);
         break;
 
@@ -3657,13 +3659,13 @@ xchar sx, sy;
         }
         break;
     case ZT_COLD:
-        if (Cold_resistance) {
-            shieldeff(sx, sy);
-            You("don't feel cold.");
-            ugolemeffects(AD_COLD, d(nd, 6));
-        } else {
-            dam = d(nd, 6);
-        }
+        Inform_about_fraction(FCold_resistance,,,
+                              shieldeff(sx, sy),
+                              shieldeff(sx, sy); You("don't feel cold."),
+                              You_feel("better!"));
+        dam = d(nd, 6);
+        ugolemeffects(AD_COLD, dam);
+        dam = resist_dmg(dam, COLD_RES);
         if (!rn2(3))
             destroy_item(POTION_CLASS, AD_COLD);
         break;

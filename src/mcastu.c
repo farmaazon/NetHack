@@ -293,18 +293,18 @@ boolean foundyou;
         pline("You're enveloped in flames.");
         Inform_about_fraction(FFire_resistance,,,
             shieldeff(u.ux, u.uy); pline("But you resist the effects."),
-            shieldeff(u.ux, u.uy); pline_The("fire does not harm you"),
+            shieldeff(u.ux, u.uy); pline("fire does not harm you."),
             pline_The("fire heals you"));
         dmg = resist_dmg(dmg, FIRE_RES);
         burn_away_slime();
         break;
     case AD_COLD:
         pline("You're covered in frost.");
-        if (Cold_resistance) {
-            shieldeff(u.ux, u.uy);
-            pline("But you resist the effects.");
-            dmg = 0;
-        }
+        Inform_about_fraction(FCold_resistance,,,
+            shieldeff(u.ux, u.uy); pline("But you resist the effects."),
+            shieldeff(u.ux, u.uy); pline("It does not harm you."),
+            You("find it nicely chilly"));
+        dmg = resist_dmg(dmg, COLD_RES);
         break;
     case AD_MAGM:
         You("are hit by a shower of missiles!");

@@ -154,7 +154,9 @@ int expltype;
                     explmask[i][j] = FFire_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_COLD:
-                    explmask[i][j] = !!Cold_resistance;
+                    uhurtmask = FALSE;
+                    damu = resist_dmg(damu, COLD_RES);
+                    explmask[i][j] = FCold_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_DISN:
                     explmask[i][j] = (olet == WAND_CLASS)

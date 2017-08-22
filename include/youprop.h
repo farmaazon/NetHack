@@ -31,7 +31,7 @@
 
 #define HCold_resistance u.uprops[COLD_RES].intrinsic
 #define ECold_resistance u.uprops[COLD_RES].extrinsic
-#define Cold_resistance (HCold_resistance || ECold_resistance)
+#define FCold_resistance prop_fraction(&u.uprops[COLD_RES])
 
 #define HSleep_resistance u.uprops[SLEEP_RES].intrinsic
 #define ESleep_resistance u.uprops[SLEEP_RES].extrinsic

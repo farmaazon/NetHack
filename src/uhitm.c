@@ -2485,14 +2485,15 @@ boolean wep_was_destroyed;
             break;
         case AD_COLD: /* brown mold or blue jelly */
             if (monnear(mon, u.ux, u.uy)) {
-                if (Cold_resistance) {
-                    shieldeff(u.ux, u.uy);
-                    You_feel("a mild chill.");
-                    ugolemeffects(AD_COLD, tmp);
-                    break;
-                }
-                You("are suddenly very cold!");
-                mdamageu(mon, tmp);
+                Inform_about_fraction(FFire_resistance,
+                                      You("are suddenly very cold!"),
+                                      shieldeff(u.ux, u.uy);You("are suddenly very cold!"),
+                                      shieldeff(u.ux, u.uy);You_feel("a mild chill."),
+                                      ,
+                                      You_feel("a nice mild chill.")
+                                      );
+                ugolemeffects(AD_COLD, tmp);
+                mdamageu(mon, resist_dmg(tmp, COLD_RES));
                 /* monster gets stronger with your heat! */
                 mon->mhp += tmp / 2;
                 if (mon->mhpmax < mon->mhp)
@@ -2508,13 +2509,10 @@ boolean wep_was_destroyed;
             break;
         case AD_FIRE:
             if (monnear(mon, u.ux, u.uy)) {
-                if (FFire_resistance >= FULL_PROPERTY/2)
-                    shieldeff(u.ux, u.uy);
-
                 Inform_about_fraction(FFire_resistance,
                                       You("are suddenly very hot!"),
-                                      You("are suddenly very hot!"),
-                                      You_feel("mildly warm."),
+                                      shieldeff(u.ux, u.uy);You("are suddenly very hot!"),
+                                      shieldeff(u.ux, u.uy);You_feel("mildly warm."),
                                       ,
                                       You_feel("nicely warm.")
                                       );

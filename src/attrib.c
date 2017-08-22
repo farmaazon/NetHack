@@ -888,7 +888,12 @@ int prop_idx;
     buf[0] = '\0';
     if (wizard) {
         long value = prop_fraction(&u.uprops[prop_idx]);
-        Sprintf(buf, "(%ld%% / %ld)", 100L*value / FULL_PROPERTY, value/FRACTION_UNIT);
+        int from = 100L*value / FULL_PROPERTY;
+        int to = (100L*value-1)/FULL_PROPERTY + 1;
+        if (from == to)
+            Sprintf(buf, " (%d%%)", from);
+        else
+            Sprintf(buf, " (%d%%-%d%%)", from, to);
     }
     return buf;
 }

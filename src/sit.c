@@ -152,8 +152,10 @@ dosit()
                "sitting on lava", KILLED_BY);
     } else if (is_ice(u.ux, u.uy)) {
         You(sit_message, defsyms[S_ice].explanation);
-        if (!Cold_resistance)
-            pline_The("ice feels cold.");
+        Inform_about_fraction(FCold_resistance,
+                              pline_The("ice feels very cold!"),
+                              pline_The("ice feels cold."),
+                              pline_The("ice feels chilly."),,);
     } else if (typ == DRAWBRIDGE_DOWN) {
         You(sit_message, "drawbridge");
     } else if (IS_THRONE(typ)) {

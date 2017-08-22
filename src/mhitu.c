@@ -1041,7 +1041,7 @@ register struct attack *mattk;
                 Inform_about_fraction(FFire_resistance,,,
                     pline_The("fire doesn't feel hot!"),
                     pline_The("fire doesn't harm you!"),
-                    You_feel("better!"));
+                    Hallucination ? You_feel("you will be a better man!") : You_feel("better!"));
                 dmg = resist_dmg(dmg, FIRE_RES);
             }
             if ((int) mtmp->m_lev > rn2(20))
@@ -1058,10 +1058,11 @@ register struct attack *mattk;
         hitmsg(mtmp, mattk);
         if (uncancelled) {
             pline("You're covered in frost!");
-            if (Cold_resistance) {
-                pline_The("frost doesn't seem cold!");
-                dmg = 0;
-            }
+            Inform_about_fraction(FFire_resistance,,,
+                pline_The("frost doesn't seem hot!"),
+                pline_The("frost doesn't harm you!"),
+                Hallucination ? You_feel("you will be a better man!") : You_feel("better!"));
+            dmg = resist_dmg(dmg, COLD_RES);
             if ((int) mtmp->m_lev > rn2(20))
                 destroy_item(POTION_CLASS, AD_COLD);
         } else
@@ -1900,13 +1901,15 @@ register struct attack *mattk;
         break;
     case AD_COLD:
         if (!mtmp->mcan && rn2(2)) {
-            if (Cold_resistance) {
-                shieldeff(u.ux, u.uy);
-                You_feel("mildly chilly.");
-                ugolemeffects(AD_COLD, tmp);
-                tmp = 0;
-            } else
-                You("are freezing to death!");
+            Inform_about_fraction(FFire_resistance,
+                                  You("are freezing to death!"),
+                                  pline("Brr! It's very cold here!"),
+                                  shieldeff(u.ux, u.uy); You("feel cold!"),
+                                  shieldeff(u.ux, u.uy); You_feel("mildly chilly."),
+                                  You_feel("relaxed")
+                                  );
+            ugolemeffects(AD_COLD, tmp);
+            tmp = resist_dmg(tmp, COLD_RES);
         } else
             tmp = 0;
         break;
@@ -1989,7 +1992,7 @@ boolean ufound;
         switch (mattk->adtyp) {
         case AD_COLD:
             physical_damage = FALSE;
-            not_affected |= Cold_resistance;
+            tmp = resist_dmg(tmp, COLD_RES);
             goto common;
         case AD_FIRE:
             physical_damage = FALSE;
