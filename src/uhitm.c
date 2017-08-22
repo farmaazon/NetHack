@@ -2487,11 +2487,10 @@ boolean wep_was_destroyed;
             if (monnear(mon, u.ux, u.uy)) {
                 Inform_about_fraction(FFire_resistance,
                                       You("are suddenly very cold!"),
-                                      shieldeff(u.ux, u.uy);You("are suddenly very cold!"),
+                                      You("are suddenly very cold!"),
+                                      shieldeff(u.ux, u.uy);You_feel("a sudden chill."),
                                       shieldeff(u.ux, u.uy);You_feel("a mild chill."),
-                                      ,
-                                      You_feel("a nice mild chill.")
-                                      );
+                                      You_feel("a nice mild chill."));
                 ugolemeffects(AD_COLD, tmp);
                 mdamageu(mon, resist_dmg(tmp, COLD_RES));
                 /* monster gets stronger with your heat! */
@@ -2511,24 +2510,23 @@ boolean wep_was_destroyed;
             if (monnear(mon, u.ux, u.uy)) {
                 Inform_about_fraction(FFire_resistance,
                                       You("are suddenly very hot!"),
-                                      shieldeff(u.ux, u.uy);You("are suddenly very hot!"),
+                                      You("are suddenly very hot!"),
+                                      shieldeff(u.ux, u.uy);You_feel("warm."),
                                       shieldeff(u.ux, u.uy);You_feel("mildly warm."),
-                                      ,
-                                      You_feel("nicely warm.")
-                                      );
+                                      You_feel("nicely warm."));
                 ugolemeffects(AD_FIRE, tmp);
                 mdamageu(mon, resist_dmg(tmp, FIRE_RES)); /* fire damage */
             }
             break;
         case AD_ELEC:
-            if (Shock_resistance) {
-                shieldeff(u.ux, u.uy);
-                You_feel("a mild tingle.");
-                ugolemeffects(AD_ELEC, tmp);
-                break;
-            }
-            You("are jolted with electricity!");
-            mdamageu(mon, tmp);
+            Inform_about_fraction(FFire_resistance,
+                                  You("are jolted with electricity!"),
+                                  You("are jolted with electricity!"),
+                                  shieldeff(u.ux, u.uy);You("are jolted with electricity."),
+                                  shieldeff(u.ux, u.uy);You_feel("a mild tingle."),
+                                  You_feel("a new life force."));
+            ugolemeffects(AD_ELEC, tmp);
+            mdamageu(mon, resist_dmg(tmp, SHOCK_RES));
             break;
         default:
             break;

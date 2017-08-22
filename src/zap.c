@@ -2217,15 +2217,15 @@ boolean ordinary;
 
     case WAN_LIGHTNING:
         learn_it = TRUE;
-        if (!Shock_resistance) {
-            You("shock yourself!");
-            damage = d(12, 6);
-            exercise(A_CON, FALSE);
-        } else {
-            shieldeff(u.ux, u.uy);
-            You("zap yourself, but seem unharmed.");
-            ugolemeffects(AD_ELEC, d(12, 6));
-        }
+        Inform_about_fraction(FFire_resistance,
+                              You("shock yourself!");,
+                              You("shock yourself!");,
+                              shieldeff(u.ux, u.uy); You("shock yourself!");,
+                              shieldeff(u.ux, u.uy); You("zap yourself, but seem unharmed."),
+                              You_feel("a pleasant tingling"));
+        damage = d(12, 6);
+        ugolemeffects(AD_ELEC, damage);
+        damage = resist_dmg(damage, SHOCK_RES);
         destroy_item(WAND_CLASS, AD_ELEC);
         destroy_item(RING_CLASS, AD_ELEC);
         (void) flashburn((long) rnd(100));
@@ -3715,14 +3715,15 @@ xchar sx, sy;
         done(DIED);
         return; /* lifesaved */
     case ZT_LIGHTNING:
-        if (Shock_resistance) {
-            shieldeff(sx, sy);
-            You("aren't affected.");
-            ugolemeffects(AD_ELEC, d(nd, 6));
-        } else {
-            dam = d(nd, 6);
+        Inform_about_fraction(FShock_resistance,,,
+                              shieldeff(sx, sy),
+                              shieldeff(sx, sy);  You("aren't affected."),
+                              You_feel("better!"));
+        dam = d(nd, 6);
+        ugolemeffects(AD_ELEC, dam);
+        dam = resist_dmg(dam, SHOCK_RES);
+        if (!Fraction_test(FShock_resistance))
             exercise(A_CON, FALSE);
-        }
         if (!rn2(3))
             destroy_item(WAND_CLASS, AD_ELEC);
         if (!rn2(3))
@@ -4676,7 +4677,7 @@ register int osym, dmgtyp;
                 skip++;
             break;
         case AD_FIRE:
-            xresist = obj->oclass != POTION_CLASS && obj->otyp != GLOB_OF_GREEN_SLIME ? FIRE_RES : 0;
+            xresist = obj->oclass == POTION_CLASS || obj->otyp == GLOB_OF_GREEN_SLIME ? FIRE_RES : 0;
 
             if (obj->otyp == SCR_FIRE || obj->otyp == SPE_FIREBALL)
                 skip++;
@@ -4714,7 +4715,7 @@ register int osym, dmgtyp;
             }
             break;
         case AD_ELEC:
-            xresist = (Shock_resistance && obj->oclass != RING_CLASS)*FULL_PROPERTY;
+            xresist = obj->oclass == RING_CLASS ? FShock_resistance : 0;
             quan = obj->quan;
             switch (osym) {
             case RING_CLASS:

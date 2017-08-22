@@ -43,7 +43,7 @@
 
 #define HShock_resistance u.uprops[SHOCK_RES].intrinsic
 #define EShock_resistance u.uprops[SHOCK_RES].extrinsic
-#define Shock_resistance (HShock_resistance || EShock_resistance)
+#define FShock_resistance prop_fraction(&u.uprops[SHOCK_RES])
 
 #define HPoison_resistance u.uprops[POISON_RES].intrinsic
 #define EPoison_resistance u.uprops[POISON_RES].extrinsic

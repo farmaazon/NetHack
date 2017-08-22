@@ -1059,7 +1059,7 @@ register struct attack *mattk;
         if (uncancelled) {
             pline("You're covered in frost!");
             Inform_about_fraction(FFire_resistance,,,
-                pline_The("frost doesn't seem hot!"),
+                pline_The("frost doesn't seem cold!"),
                 pline_The("frost doesn't harm you!"),
                 Hallucination ? You_feel("you will be a better man!") : You_feel("better!"));
             dmg = resist_dmg(dmg, COLD_RES);
@@ -1072,10 +1072,11 @@ register struct attack *mattk;
         hitmsg(mtmp, mattk);
         if (uncancelled) {
             You("get zapped!");
-            if (Shock_resistance) {
-                pline_The("zap doesn't shock you!");
-                dmg = 0;
-            }
+            Inform_about_fraction(FFire_resistance,,,
+                pline_The("zap mildly shock you!"),
+                pline_The("zap doesn't harm you!"),
+                Hallucination ? You_feel("you will be a better man!") : You_feel("better!"));
+            dmg = resist_dmg(dmg, SHOCK_RES);
             if ((int) mtmp->m_lev > rn2(20))
                 destroy_item(WAND_CLASS, AD_ELEC);
             if ((int) mtmp->m_lev > rn2(20))
@@ -1890,12 +1891,12 @@ register struct attack *mattk;
     case AD_ELEC:
         if (!mtmp->mcan && rn2(2)) {
             pline_The("air around you crackles with electricity.");
-            if (Shock_resistance) {
-                shieldeff(u.ux, u.uy);
-                You("seem unhurt.");
-                ugolemeffects(AD_ELEC, tmp);
-                tmp = 0;
-            }
+            Inform_about_fraction(FShock_resistance,,,
+                                  shieldeff(u.ux, u.uy); You_feel("mildly shocked"),
+                                  shieldeff(u.ux, u.uy); You("seem unhurt."),
+                                  You_feel("relaxed"));
+            ugolemeffects(AD_ELEC, tmp);
+            tmp = resist_dmg(tmp, SHOCK_RES);
         } else
             tmp = 0;
         break;
@@ -1906,8 +1907,7 @@ register struct attack *mattk;
                                   pline("Brr! It's very cold here!"),
                                   shieldeff(u.ux, u.uy); You("feel cold!"),
                                   shieldeff(u.ux, u.uy); You_feel("mildly chilly."),
-                                  You_feel("relaxed")
-                                  );
+                                  You_feel("relaxed"));
             ugolemeffects(AD_COLD, tmp);
             tmp = resist_dmg(tmp, COLD_RES);
         } else
@@ -1920,8 +1920,7 @@ register struct attack *mattk;
                                   pline("Aah! It's very hot here!"),
                                   shieldeff(u.ux, u.uy); You("feel hot!"),
                                   shieldeff(u.ux, u.uy); You_feel("mildly hot."),
-                                  You_feel("relaxed")
-                                  );
+                                  You_feel("relaxed"));
             ugolemeffects(AD_FIRE, tmp);
             tmp = resist_dmg(tmp, FIRE_RES);
             burn_away_slime();
@@ -2000,10 +1999,10 @@ boolean ufound;
             goto common;
         case AD_ELEC:
             physical_damage = FALSE;
-            not_affected |= Shock_resistance;
+            tmp = resist_dmg(tmp, SHOCK_RES);
         common:
 
-            not_affected |= tmp == 0;
+            not_affected = tmp == 0;
             if (!not_affected) {
                 if (ACURR(A_DEX) > rnd(20)) {
                     You("duck some of the blast.");

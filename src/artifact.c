@@ -786,12 +786,14 @@ struct monst *mtmp;
             return 0;
         switch (weap->attk.adtyp) {
         case AD_FIRE:
-            u.utrained_prop = &u.uprops[FIRE_RES];
+            set_trained_prop(FIRE_RES);
             return yours ? FULL_PROPERTY - FFire_resistance : (!resists_fire(mtmp))*FULL_PROPERTY;
         case AD_COLD:
+            set_trained_prop(COLD_RES);
             return yours ? FULL_PROPERTY - FCold_resistance : (!resists_cold(mtmp))*FULL_PROPERTY;
         case AD_ELEC:
-            return (!(yours ? Shock_resistance : resists_elec(mtmp)))*FULL_PROPERTY;
+            set_trained_prop(SHOCK_RES);
+            return yours ? FULL_PROPERTY - FShock_resistance : (!resists_elec(mtmp))*FULL_PROPERTY;
         case AD_MAGM:
         case AD_STUN:
             return (!(yours ? Antimagic : (rn2(100) < ptr->mr)))*FULL_PROPERTY;

@@ -545,13 +545,14 @@ int spellnum;
 
         pline("A bolt of lightning strikes down at you from above!");
         reflects = ureflects("It bounces off your %s%s.", "");
-        if (reflects || Shock_resistance) {
+        if (reflects) {
             shieldeff(u.ux, u.uy);
             dmg = 0;
-            if (reflects)
-                break;
-        } else
-            dmg = d(8, 6);
+            break;
+        }
+        if (FShock_resistance > FULL_PROPERTY/2)
+            shieldeff(u.ux, u.uy);
+        dmg = resist_dmg(d(8, 6), SHOCK_RES);
         if (Half_spell_damage)
             dmg = (dmg + 1) / 2;
         destroy_item(WAND_CLASS, AD_ELEC);

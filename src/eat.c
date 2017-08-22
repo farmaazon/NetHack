@@ -858,7 +858,7 @@ register struct permonst *ptr;
     case FIRE_RES:
         debugpline0("Trying to give fire resistance");        
         You(Hallucination ? "be chillin'." : "feel a momentary chill.");
-        set_itimeout(&HFire_resistance, 100);
+        set_itimeout(&HFire_resistance, 200);
         break;
     case SLEEP_RES:
         debugpline0("Trying to give sleep resistance");
@@ -869,10 +869,8 @@ register struct permonst *ptr;
         break;
     case COLD_RES:
         debugpline0("Trying to give cold resistance");
-        if (!(HCold_resistance & FROMOUTSIDE)) {
-            You_feel("full of hot air.");
-            HCold_resistance |= FROMOUTSIDE;
-        }
+        You_feel("full of hot air.");
+        set_itimeout(&HCold_resistance, 200);
         break;
     case DISINT_RES:
         debugpline0("Trying to give disintegration resistance");
@@ -883,13 +881,11 @@ register struct permonst *ptr;
         break;
     case SHOCK_RES: /* shock (electricity) resistance */
         debugpline0("Trying to give shock resistance");
-        if (!(HShock_resistance & FROMOUTSIDE)) {
-            if (Hallucination)
-                You_feel("grounded in reality.");
-            else
-                Your("health currently feels amplified!");
-            HShock_resistance |= FROMOUTSIDE;
-        }
+        if (Hallucination)
+            You_feel("grounded in reality.");
+        else
+            Your("health currently feels amplified!");
+        set_itimeout(&HShock_resistance, 200);
         break;
     case POISON_RES:
         debugpline0("Trying to give poison resistance");

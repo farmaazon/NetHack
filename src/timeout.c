@@ -550,6 +550,14 @@ nh_timeout()
             case FIRE_RES:
                 You_feel("warmer.");
                 break;
+            case COLD_RES:
+                You_feel("cooler.");
+                break;
+            case SHOCK_RES:
+                if (Hallucination)
+                    You_feel("ungrounded.");
+                else
+                    You("become a better conductor.");
             }
         }
 

@@ -857,6 +857,7 @@ E long FDECL(prop_fraction, (struct prop *));
 E int FDECL(scale_by_fraction, (int, long));
 E int FDECL(resist_dmg, (int, int));
 E void FDECL(set_trained_prop, (int));
+E void FDECL(train_prop, (int, struct prop *));
 E void NDECL(train);
 
 /* ### hacklib.c ### */

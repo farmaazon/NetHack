@@ -4711,12 +4711,13 @@ boolean disarm;
             int dmg;
 
             You("are jolted by a surge of electricity!");
-            if (Shock_resistance) {
-                shieldeff(u.ux, u.uy);
-                You("don't seem to be affected.");
-                dmg = 0;
-            } else
-                dmg = d(4, 4);
+            Inform_about_fraction(FShock_resistance,,,
+                                  shieldeff(u.ux, u.uy),
+                                  shieldeff(u.ux, u.uy); You("don't seem to be affected."),
+                                  pline("But it seems to heal your injuries!"));
+
+            dmg = resist_dmg(d(4,4), SHOCK_RES);
+
             destroy_item(RING_CLASS, AD_ELEC);
             destroy_item(WAND_CLASS, AD_ELEC);
             if (dmg)

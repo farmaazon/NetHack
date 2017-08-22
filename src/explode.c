@@ -165,7 +165,9 @@ int expltype;
                                          : !!Disint_resistance;
                     break;
                 case AD_ELEC:
-                    explmask[i][j] = !!Shock_resistance;
+                    uhurtmask = FALSE;
+                    damu = resist_dmg(damu, SHOCK_RES);
+                    explmask[i][j] = FShock_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_DRST:
                     explmask[i][j] = !!Poison_resistance;

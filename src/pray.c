@@ -553,9 +553,17 @@ aligntyp resp_god;
                 pline("For some reason you're unaffected.");
             else
                 (void) ureflects("%s reflects from your %s.", "It");
-        } else if (Shock_resistance) {
+        } else if (FShock_resistance == FULL_PROPERTY) {
             shieldeff(u.ux, u.uy);
             pline("It seems not to affect you.");
+        } else if (FShock_resistance >= FULL_PROPERTY) {
+            You("absorb the powerful electric charge. ");
+            u.uhpmax = scale_by_fraction(u.uhpmax, FShock_resistance);
+            u.uhp = u.uhpmax;
+             /* it should decrease shock resistance; otherwise the player
+              * might call for lighting repeatedly to rapidly increase their
+              * maxhp */
+            train_prop(u.uhpmax, &u.uprops[SHOCK_RES]);
         } else
             fry_by_god(resp_god, FALSE);
     }
@@ -719,8 +727,8 @@ gcrownu()
 
     HSee_invisible |= FROMOUTSIDE;
     HFire_resistance = increased_fraction(HFire_resistance, FULL_PROPERTY/4);
-    HCold_resistance |= FROMOUTSIDE;
-    HShock_resistance |= FROMOUTSIDE;
+    HCold_resistance = increased_fraction(HCold_resistance, FULL_PROPERTY/4);
+    HShock_resistance = increased_fraction(HShock_resistance, FULL_PROPERTY/4);
     HSleep_resistance |= FROMOUTSIDE;
     HPoison_resistance |= FROMOUTSIDE;
     godvoice(u.ualign.type, (char *) 0);

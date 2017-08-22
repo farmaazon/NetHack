@@ -171,8 +171,8 @@ dosit()
                 break;
             case 3:
                 pline("A%s electric shock shoots through your body!",
-                      (Shock_resistance) ? "n" : " massive");
-                losehp(Shock_resistance ? rnd(6) : rnd(30), "electric chair",
+                      (FShock_resistance >= FULL_PROPERTY/2) ? "n" : " massive");
+                losehp(rnd(6) + resist_dmg(rnd(30), SHOCK_RES), "electric chair",
                        KILLED_BY_AN);
                 exercise(A_CON, FALSE);
                 break;

@@ -2175,8 +2175,11 @@ int final;
         you_are("sleep resistant", from_what(SLEEP_RES));
     if (Disint_resistance)
         you_are("disintegration-resistant", from_what(DISINT_RES));
-    if (Shock_resistance)
-        you_are("shock resistant", from_what(SHOCK_RES));
+    Inform_about_fraction(FShock_resistance,,
+                          you_are("somewhat shock resistant", property_percents(COLD_RES)),
+                          you_are("shock resistant", property_percents(COLD_RES)),
+                          you_are("invlunerable to electricity", property_percents(COLD_RES)),
+                          you_will("be healed by electricity", property_percents(COLD_RES)));
     if (Poison_resistance)
         you_are("poison resistant", from_what(POISON_RES));
     if (Acid_resistance)
