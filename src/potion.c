@@ -799,44 +799,50 @@ register struct obj *otmp;
         exercise(A_WIS, TRUE);
         break;
     case POT_SICKNESS:
-        pline("Yecch!  This stuff tastes like poison.");
+        if (FPoison_resistance < FULL_PROPERTY)
+            pline("Yecch!  This stuff tastes like poison.");
+        else
+            pline(
+                Hallucination
+                    ? "This tastes like 10%% real %s%s all-natural beverage."
+                    : "This tastes like %s%s.",
+                otmp->odiluted ? "reconstituted " : "", fruitname(TRUE));
+
         if (otmp->blessed) {
-            pline("(But in fact it was mildly stale %s.)", fruitname(TRUE));
+            if (FPoison_resistance < FULL_PROPERTY)
+                pline("(But in fact it was mildly stale %s.)", fruitname(TRUE));
             if (!Role_if(PM_HEALER)) {
                 /* NB: blessed otmp->fromsink is not possible */
-                losehp(1, "mildly contaminated potion", KILLED_BY_AN);
+                losehp(resist_dmg(1, POISON_RES), "mildly contaminated potion", KILLED_BY_AN);
             }
         } else {
-            if (Poison_resistance)
+            if (FPoison_resistance >= FULL_PROPERTY/2 && FPoison_resistance < FULL_PROPERTY)
                 pline("(But in fact it was biologically contaminated %s.)",
                       fruitname(TRUE));
-            if (Role_if(PM_HEALER)) {
+            if (Role_if(PM_HEALER) && FPoison_resistance < FULL_PROPERTY) {
                 pline("Fortunately, you have been immunized.");
             } else {
                 char contaminant[BUFSZ];
                 int typ = rn2(A_MAX);
+                int dmg, attrloss;
 
                 Sprintf(contaminant, "%s%s",
-                        (Poison_resistance) ? "mildly " : "",
+                        (FPoison_resistance >= FULL_PROPERTY/2) ? "mildly " : "",
                         (otmp->fromsink) ? "contaminated tap water"
                                          : "contaminated potion");
                 if (!Fixed_abil) {
-                    poisontell(typ, FALSE);
-                    (void) adjattrib(typ, Poison_resistance ? -1 : -rn1(4, 3),
-                                     1);
+                    attrloss = resist_injury(rn1(4, 4), 5, POISON_RES);
+                    if (adjattrib(typ, -attrloss, 1))
+                        poisontell(typ, FALSE, -attrloss);
                 }
-                if (!Poison_resistance) {
-                    if (otmp->fromsink)
-                        losehp(rnd(10) + 5 * !!(otmp->cursed), contaminant,
-                               KILLED_BY);
-                    else
-                        losehp(rnd(10) + 5 * !!(otmp->cursed), contaminant,
-                               KILLED_BY_AN);
-                } else {
-                    /* rnd loss is so that unblessed poorer than blessed */
-                    losehp(1 + rn2(2), contaminant,
-                           (otmp->fromsink) ? KILLED_BY : KILLED_BY_AN);
-                }
+                dmg = resist_dmg(rnd(10) + 5 * !!(otmp->cursed), POISON_RES);
+                if (otmp->fromsink)
+                    losehp(dmg, contaminant,
+                           KILLED_BY);
+                else
+                    losehp(dmg, contaminant,
+                           KILLED_BY_AN);
+
                 exercise(A_CON, FALSE);
             }
         }

@@ -170,7 +170,9 @@ int expltype;
                     explmask[i][j] = FShock_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_DRST:
-                    explmask[i][j] = !!Poison_resistance;
+                    uhurtmask = FALSE;
+                    damu = resist_dmg(damu, POISON_RES);
+                    explmask[i][j] = FPoison_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_ACID:
                     explmask[i][j] = !!Acid_resistance;

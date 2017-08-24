@@ -47,7 +47,7 @@
 
 #define HPoison_resistance u.uprops[POISON_RES].intrinsic
 #define EPoison_resistance u.uprops[POISON_RES].extrinsic
-#define Poison_resistance (HPoison_resistance || EPoison_resistance)
+#define FPoison_resistance prop_fraction(&u.uprops[POISON_RES])
 
 #define HDrain_resistance u.uprops[DRAIN_RES].intrinsic
 #define EDrain_resistance u.uprops[DRAIN_RES].extrinsic

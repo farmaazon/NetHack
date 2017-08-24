@@ -136,12 +136,9 @@ struct prop {
 /* Control flags */
 #define FROMFORM 0x10000000L  /* Polyd; conferred by monster form */
 #define I_SPECIAL 0x20000000L /* Property is controllable */
-#define INTRINSIC (FROMRACE | FROMEXPER | FULL_PROPERTY)
+#define INTRINSIC (FROMRACE | FROMEXPER | FROMOUTSIDE)
 
 /* About property fraction */
-//#define MUCH_PROPERTY (7*FULL_PROPERTY/2)
-//#define HALF_PROPERTY (FULL_PROPERTY/2)
-//#define QUARTER_PROPERTY (FULL_PROPERTY/4)
 #define FRACTION_UNIT 0x00010000L
 };
 

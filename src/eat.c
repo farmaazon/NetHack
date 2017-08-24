@@ -889,10 +889,8 @@ register struct permonst *ptr;
         break;
     case POISON_RES:
         debugpline0("Trying to give poison resistance");
-        if (!(HPoison_resistance & FROMOUTSIDE)) {
-            You_feel(Poison_resistance ? "especially healthy." : "healthy.");
-            HPoison_resistance |= FROMOUTSIDE;
-        }
+        You_feel(HPoison_resistance & TIMEOUT ? "especially healthy." : "healthy.");
+        incr_itimeout(&HPoison_resistance, 500);
         break;
     case TELEPORT:
         debugpline0("Trying to give teleport");
@@ -1621,12 +1619,15 @@ struct obj *otmp;
     } else if (poisonous(&mons[mnum]) && rn2(5)) {
         tp++;
         pline("Ecch - that must have been poisonous!");
-        if (!Poison_resistance) {
-            losestr(rnd(4));
-            losehp(rnd(15), !glob ? "poisonous corpse" : "poisonous glob",
+        Inform_about_fraction(FPoison_resistance,,,,
+                              You("seem unaffected by the poison."),
+                              You("seem healed by the poison!"));
+        {
+            losestr(resist_injury(rnd(4), 5, POISON_RES));
+            losehp(resist_dmg(rnd(15), POISON_RES),
+                   !glob ? "poisonous corpse" : "poisonous glob",
                    KILLED_BY_AN);
-        } else
-            You("seem unaffected by the poison.");
+        }
     /* now any corpse left too long will make you mildly ill */
     } else if ((rotted > 5L || (rotted > 3L && rn2(5))) && !Sick_resistance) {
         tp++;
@@ -2318,7 +2319,7 @@ struct obj *otmp;
         else
             return 2;
     }
-    if (cadaver && poisonous(&mons[mnum]) && !Poison_resistance) {
+    if (cadaver && poisonous(&mons[mnum]) && FPoison_resistance < FULL_PROPERTY) {
         /* poisonous */
         Sprintf(buf, "%s like %s might be poisonous! %s", foodsmell,
                 it_or_they, eat_it_anyway);
@@ -2519,11 +2520,11 @@ doeat()
 
         if (otmp->oclass == WEAPON_CLASS && otmp->opoisoned) {
             pline("Ecch - that must have been poisonous!");
-            if (!Poison_resistance) {
-                losestr(rnd(4));
-                losehp(rnd(15), xname(otmp), KILLED_BY_AN);
-            } else
-                You("seem unaffected by the poison.");
+            Inform_about_fraction(FPoison_resistance,,,,
+                                  You("seem unaffected by the poison."),
+                                  You("seem be healed by the poison"));
+            losestr(resist_injury(rnd(4), 5, POISON_RES));
+            losehp(resist_dmg(rnd(15), POISON_RES), xname(otmp), KILLED_BY_AN);
         } else if (!nodelicious) {
             pline("%s%s is delicious!",
                   (obj_is_pname(otmp)

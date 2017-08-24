@@ -2180,8 +2180,11 @@ int final;
                           you_are("shock resistant", property_percents(COLD_RES)),
                           you_are("invlunerable to electricity", property_percents(COLD_RES)),
                           you_will("be healed by electricity", property_percents(COLD_RES)));
-    if (Poison_resistance)
-        you_are("poison resistant", from_what(POISON_RES));
+    Inform_about_fraction(FPoison_resistance,,
+                          you_are("somewhat poison resistant", property_percents(POISON_RES)),
+                          you_are("poison resistant", property_percents(POISON_RES)),
+                          you_are("invlunerable to poison", property_percents(POISON_RES)),
+                          you_will("be healed by poison", property_percents(POISON_RES)));
     if (Acid_resistance)
         you_are("acid resistant", from_what(ACID_RES));
     if (Drain_resistance)

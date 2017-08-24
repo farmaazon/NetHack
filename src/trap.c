@@ -3006,7 +3006,7 @@ dofiretrap(box)
 struct obj *box; /* null for floor trap */
 {
     boolean see_it = !Blind;
-    int num, alt, abused_hp = 0;
+    int num, alt;
 
     /* Bug: for box case, the equivalent of burn_floor_objects() ought
      * to be done upon its contents.
@@ -3047,24 +3047,22 @@ struct obj *box; /* null for floor trap */
         if (alt > num)
             num = alt;
         if (u.mhmax > mons[u.umonnum].mlevel) {
-            abused_hp = rn2(min(u.mhmax, num + 1));
-            u.mhmax -= scale_by_fraction(abused_hp, FULL_PROPERTY - FFire_resistance);
+            u.mhmax -= resist_injury(rn2(min(u.mhmax, num + 1)), 8, FIRE_RES);
             context.botl = 1;
         }
     } else {
         num = d(2, 4);
         if (u.uhpmax > u.ulevel) {
-            abused_hp = rn2(min(u.uhpmax, num + 1));
-            u.uhpmax -= scale_by_fraction(abused_hp, FULL_PROPERTY - FFire_resistance);
+            u.uhpmax -= resist_injury(rn2(min(u.uhpmax, num + 1)), 8, FIRE_RES);
             context.botl = 1;
         }
     }
-    u.utraining = num + abused_hp*8;
-    num = scale_by_fraction(num, FULL_PROPERTY - FFire_resistance);
+    num = resist_dmg(num, FIRE_RES);
     if (!num)
         You("are uninjured.");
     else
         losehp(num, tower_of_flame, KILLED_BY_AN); /* fire damage */
+    train();
     burn_away_slime();
 
     if (burnarmor(&youmonst) || rn2(3)) {

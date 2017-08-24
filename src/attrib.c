@@ -217,23 +217,26 @@ register int num;
 static const struct poison_effect_message {
     void VDECL((*delivery_func), (const char *, ...));
     const char *effect_msg;
+    const char *heal_msg;
 } poiseff[] = {
-    { You_feel, "weaker" },             /* A_STR */
-    { Your, "brain is on fire" },       /* A_INT */
-    { Your, "judgement is impaired" },  /* A_WIS */
-    { Your, "muscles won't obey you" }, /* A_DEX */
-    { You_feel, "very sick" },          /* A_CON */
-    { You, "break out in hives" }       /* A_CHA */
+    { You_feel, "weaker", "stronger" },             /* A_STR */
+    { Your, "brain is on fire", "concentration is strenghtened" },  /* A_INT */
+    { Your, "judgement is impaired", "mind is cleared" },  /* A_WIS */
+    { Your, "muscles won't obey you", "reaction is quicker" }, /* A_DEX */
+    { You_feel, "very sick", "healthy" },          /* A_CON */
+    { You, "break out in hives", "get cleansed complexion" }       /* A_CHA */
 };
 
 /* feedback for attribute loss due to poisoning */
 void
-poisontell(typ, exclaim)
+poisontell(typ, exclaim, sign)
 int typ;         /* which attribute */
 boolean exclaim; /* emphasis */
+int sign;        /* < 0 - there was a loss,
+                    > 0 - there was a gain (due to poison resistance > 100% */
 {
     void VDECL((*func), (const char *, ...)) = poiseff[typ].delivery_func;
-    const char *msg_txt = poiseff[typ].effect_msg;
+    const char *msg_txt = sign < 0 ? poiseff[typ].effect_msg : poiseff[typ].heal_msg;
 
     /*
      * "You feel weaker" or "you feel very sick" aren't appropriate when
@@ -243,9 +246,9 @@ boolean exclaim; /* emphasis */
      * (dunce cap) is such that we don't need message fixups for them.
      */
     if (typ == A_STR && ACURR(A_STR) == STR19(25))
-        msg_txt = "innately weaker";
+        msg_txt = sign < 0 ? "innately weaker" : "innately stronger";
     else if (typ == A_CON && ACURR(A_CON) == 25)
-        msg_txt = "sick inside";
+        msg_txt = sign < 0 ? "sick inside" : "healthly inside";
 
     (*func)("%s%c", msg_txt, exclaim ? '!' : '.');
 }
@@ -271,9 +274,11 @@ boolean thrown_weapon; /* thrown weapons are less deadly */
               isupper((uchar) *reason) ? "" : "The ", reason,
               plural ? "were" : "was");
     }
-    if (Poison_resistance) {
-        if (!strcmp(reason, "blast"))
-            shieldeff(u.ux, u.uy);
+    if (FPoison_resistance >= FULL_PROPERTY/2 &&
+            !strcmp(reason, "blast"))
+        shieldeff(u.ux, u.uy);
+
+    if (FPoison_resistance == FULL_PROPERTY) { /* to avoid any useless messages */
         pline_The("poison doesn't seem to affect you.");
         return;
     }
@@ -291,30 +296,34 @@ boolean thrown_weapon; /* thrown weapons are less deadly */
     }
 
     i = !fatal ? 1 : rn2(fatal + (thrown_weapon ? 20 : 0));
-    if (i == 0 && typ != A_CHA) {
-        /* instant kill */
-        u.uhp = -1;
+    if (i == 0 && typ != A_CHA && FPoison_resistance < FULL_PROPERTY) {
+        u.uhp -= resist_dmg(u.uhpmax, POISON_RES);
+
+        /* instant kill if hp drop below 0 */
         context.botl = TRUE;
         pline_The("poison was deadly...");
+        if (u.uhp < 1) {
+            killer.format = kprefix;
+            Strcpy(killer.name, pkiller);
+            /* "Poisoned by a poisoned ___" is redundant */
+            done(strstri(pkiller, "poison") ? DIED : POISONING);
+        }
+        train();
     } else if (i > 5) {
         /* HP damage; more likely--but less severe--with missiles */
         loss = thrown_weapon ? rnd(6) : rn1(10, 6);
-        losehp(loss, pkiller, kprefix); /* poison damage */
+        losehp(resist_dmg(loss, POISON_RES), pkiller, kprefix); /* poison damage */
     } else {
         /* attribute loss; if typ is A_STR, reduction in current and
            maximum HP will occur once strength has dropped down to 3 */
         loss = (thrown_weapon || !fatal) ? 1 : d(2, 2); /* was rn1(3,3) */
+        loss = resist_injury(loss, 5, POISON_RES);
         /* check that a stat change was made */
         if (adjattrib(typ, -loss, 1))
-            poisontell(typ, TRUE);
+            poisontell(typ, TRUE, -loss);
+        train();
     }
 
-    if (u.uhp < 1) {
-        killer.format = kprefix;
-        Strcpy(killer.name, pkiller);
-        /* "Poisoned by a poisoned ___" is redundant */
-        done(strstri(pkiller, "poison") ? DIED : POISONING);
-    }
     (void) encumber_msg();
 }
 
@@ -934,23 +943,14 @@ int oldlevel, newlevel;
         }
         prevabil = *(abil->ability);
         if (oldlevel < abil->ulevel && newlevel >= abil->ulevel) {
-            /* Abilities gained at level 1 can never be lost
-             * via level loss, only via means that remove _any_
-             * sort of ability.  A "gain" of such an ability from
-             * an outside source is devoid of meaning, so we set
-             * FROMOUTSIDE to avoid such gains.
-             */
-            if (abil->ulevel == 1)
-                *(abil->ability) |= (mask | FROMOUTSIDE);
-            else
-                *(abil->ability) |= mask;
-            if (!(*(abil->ability) & INTRINSIC & ~mask)) {
+            *(abil->ability) |= mask;
+            if (!(*(abil->ability) & (FROMRACE | FROM_EXP) & ~mask) || (*(abil->ability) & FROMOUTSIDE)^FROMOUTSIDE) {
                 if (*(abil->gainstr))
                     You_feel("%s!", abil->gainstr);
             }
         } else if (oldlevel >= abil->ulevel && newlevel < abil->ulevel) {
             *(abil->ability) &= ~mask;
-            if (!(*(abil->ability) & INTRINSIC)) {
+            if (!(*(abil->ability) & (FROMRACE | FROM_EXP)) || (*(abil->ability) & FROMOUTSIDE)^FROMOUTSIDE) {
                 if (*(abil->losestr))
                     You_feel("%s!", abil->losestr);
                 else if (*(abil->gainstr))

@@ -44,14 +44,14 @@ const struct propname {
     { SEE_INVIS, "see invisible" },
     { INVIS, "invisible" },
     { FIRE_RES, "fire resistance" },
+    { COLD_RES, "cold resistance" },
+    { SHOCK_RES, "shock resistance" },
+    { POISON_RES, "poison resistance" },
     /* properties beyond here don't have timed values during normal play,
        so there's no much point in trying to order them sensibly;
        they're either on or off based on equipment, role, actions, &c */
-    { COLD_RES, "cold resistance" },
     { SLEEP_RES, "sleep resistance" },
     { DISINT_RES, "disintegration resistance" },
-    { SHOCK_RES, "shock resistance" },
-    { POISON_RES, "poison resistance" },
     { ACID_RES, "acid resistance" },
     { STONE_RES, "stoning resistance" },
     { DRAIN_RES, "drain resistance" },
@@ -557,7 +557,9 @@ nh_timeout()
                 if (Hallucination)
                     You_feel("ungrounded.");
                 else
-                    You("become a better conductor.");
+                    You_feel("conductive.");
+            case POISON_RES:
+                You_feel("a little sick.");
             }
         }
 

@@ -278,15 +278,15 @@ drinkfountain()
             break;
         case 21: /* Poisonous */
             pline_The("water is contaminated!");
-            if (Poison_resistance) {
+            if (FPoison_resistance >= FULL_PROPERTY) {
                 pline("Perhaps it is runoff from the nearby %s farm.",
                       fruitname(FALSE));
                 losehp(rnd(4), "unrefrigerated sip of juice", KILLED_BY_AN);
-                break;
+            } else {
+                losestr(resist_injury(rn1(4, 3), 5, POISON_RES));
+                losehp(resist_dmg(rnd(10), POISON_RES), "contaminated water", KILLED_BY);
+                exercise(A_CON, FALSE);
             }
-            losestr(rn1(4, 3));
-            losehp(rnd(10), "contaminated water", KILLED_BY);
-            exercise(A_CON, FALSE);
             break;
         case 22: /* Fountain of snakes! */
             dowatersnakes();

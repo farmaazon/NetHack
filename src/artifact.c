@@ -798,7 +798,8 @@ struct monst *mtmp;
         case AD_STUN:
             return (!(yours ? Antimagic : (rn2(100) < ptr->mr)))*FULL_PROPERTY;
         case AD_DRST:
-            return (!(yours ? Poison_resistance : resists_poison(mtmp)))*FULL_PROPERTY;
+            set_trained_prop(POISON_RES);
+            return yours ? FULL_PROPERTY - FPoison_resistance : (!resists_poison(mtmp))*FULL_PROPERTY;
         case AD_DRLI:
             return (!(yours ? Drain_resistance : resists_drli(mtmp)))*FULL_PROPERTY;
         case AD_STON:

@@ -730,7 +730,7 @@ gcrownu()
     HCold_resistance = increased_fraction(HCold_resistance, FULL_PROPERTY/4);
     HShock_resistance = increased_fraction(HShock_resistance, FULL_PROPERTY/4);
     HSleep_resistance |= FROMOUTSIDE;
-    HPoison_resistance |= FROMOUTSIDE;
+    HPoison_resistance = increased_fraction(HPoison_resistance, FULL_PROPERTY/4);
     godvoice(u.ualign.type, (char *) 0);
 
     obj = ok_wep(uwep) ? uwep : 0;

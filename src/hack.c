@@ -2783,6 +2783,8 @@ maybe_wail()
                               SHOCK_RES, FIRE_RES, SLEEP_RES, DISINT_RES,
                               TELEPORT_CONTROL, STEALTH, FAST, INVIS };
 
+#define POWER_MASK (FROMRACE | FROMEXPER | FULL_PROPERTY | FULL_PROPERTY >> 1 | FULL_PROPERTY >> 2)
+
     if (moves <= wailmsg + 50)
         return;
 
@@ -2797,7 +2799,7 @@ maybe_wail()
             pline("%s is about to die.", who);
         } else {
             for (i = 0, powercnt = 0; i < SIZE(powers); ++i)
-                if (u.uprops[powers[i]].intrinsic & INTRINSIC)
+                if (u.uprops[powers[i]].intrinsic & POWER_MASK)
                     ++powercnt;
 
             pline((powercnt >= 4) ? "%s, all your powers will be lost..."
@@ -3051,20 +3053,37 @@ scale_by_fraction(dmg, fraction)
 int dmg;
 long fraction;
 {
-    return fraction*(long)dmg/FULL_PROPERTY;
+    return fraction*(long)dmg/FULL_PROPERTY +
+        /* we must to remember, that rnd has int as argument, not long! */
+        (rnd(FULL_PROPERTY/FRACTION_UNIT)*FRACTION_UNIT <= (fraction*(long)dmg % FULL_PROPERTY));
 }
 
+
+int
+resist_injury(dmg, training_scale, prop_idx)
+int dmg, training_scale, prop_idx;
+{
+    if (!dmg)
+        return 0;
+    set_trained_prop(prop_idx);
+    u.utraining += (long)dmg*(long)training_scale;
+
+    return dmg - scale_by_fraction(dmg, prop_fraction(&u.uprops[prop_idx]));
+}
 
 int
 resist_dmg(dmg, prop_idx)
 int dmg, prop_idx;
 {
-    if (!dmg)
-        return 0;
-    set_trained_prop(prop_idx);
-    u.utraining = (long)dmg;
+    return resist_injury(dmg, 1, prop_idx);
+}
 
-    return dmg - scale_by_fraction(dmg, prop_fraction(&u.uprops[prop_idx]));
+
+int
+resist_attrloss(loss, prop_idx)
+int loss, prop_idx;
+{
+    return resist_injury(loss, 5, prop_idx);
 }
 
 
@@ -3099,13 +3118,12 @@ struct prop *prop;
     prop->intrinsic = increased_fraction(prop->intrinsic, change);
 }
 
-
 void
 train(VOID_ARGS)
 {
     train_prop(u.utraining, u.utrained_prop);
     u.utraining = 0;
-    u.utrained_prop = 0;
+    u.utrained_prop = NULL;
 }
 
 /*hack.c*/

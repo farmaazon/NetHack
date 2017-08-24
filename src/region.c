@@ -956,16 +956,18 @@ genericptr_t p2;
             Your("%s sting.", makeplural(body_part(EYE)));
             make_blinded(1L, FALSE);
         }
-        if (!Poison_resistance) {
+        if (FPoison_resistance < FULL_PROPERTY)
             pline("%s is burning your %s!", Something,
                   makeplural(body_part(LUNG)));
-            You("cough and spit blood!");
-            losehp(Maybe_Half_Phys(rnd(dam) + 5), "gas cloud", KILLED_BY_AN);
-            return FALSE;
-        } else {
-            You("cough!");
-            return FALSE;
-        }
+
+        Inform_about_fraction(FPoison_resistance,
+                              You("cough and spit blood!"),
+                              You("cough and spit blood!"),
+                              You("cough and spit blood!"),
+                              You("cough!"),
+                              You("take a deep breath."));
+        losehp(resist_dmg(Maybe_Half_Phys(rnd(dam) + 5), POISON_RES), "gas cloud", KILLED_BY_AN);
+        return FALSE;
     } else { /* A monster is inside the cloud */
         mtmp = (struct monst *) p2;
 
@@ -1057,7 +1059,7 @@ region_danger()
                 continue;
             /* minor inconvenience if you're poison resistant;
                not harmful enough to be a prayer-level trouble */
-            if (Poison_resistance)
+            if (FPoison_resistance >= FULL_PROPERTY)
                 continue;
             ++n;
         }
