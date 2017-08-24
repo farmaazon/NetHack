@@ -2764,6 +2764,8 @@ const char *msg_override;
         nomovemsg = You_can_move_again;
     if (*nomovemsg)
         pline1(nomovemsg);
+    if (u.usleep)
+        train_prop(20, &u.uprops[SLEEP_RES]);
     nomovemsg = 0;
     u.usleep = 0;
     multi_reason = NULL;

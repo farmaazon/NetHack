@@ -729,7 +729,7 @@ gcrownu()
     HFire_resistance = increased_fraction(HFire_resistance, FULL_PROPERTY/4);
     HCold_resistance = increased_fraction(HCold_resistance, FULL_PROPERTY/4);
     HShock_resistance = increased_fraction(HShock_resistance, FULL_PROPERTY/4);
-    HSleep_resistance |= FROMOUTSIDE;
+    HSleep_resistance = increased_fraction(HSleep_resistance, FULL_PROPERTY/4);
     HPoison_resistance = increased_fraction(HPoison_resistance, FULL_PROPERTY/4);
     godvoice(u.ualign.type, (char *) 0);
 

@@ -302,7 +302,12 @@ boolean resuming;
 
                     /* when immobile, count is in turns */
                     if (multi < 0) {
-                        if (++multi == 0) { /* finished yet? */
+                        /* finished yet? Or sleap broken by sleep resistance? */
+                        if (u.usleep && Fraction_test(FSleep_resistance)) {
+                            multi = -1;
+                            nomovemsg = "You overcome your sleepiness.";
+                        }
+                        if (++multi == 0) {
                             unmul((char *) 0);
                             /* if unmul caused a level change, take it now */
                             if (u.utotype)

@@ -1654,12 +1654,15 @@ register struct obj *obj;
         break;
     case POT_SLEEPING:
         kn++;
-        if (!Free_action && !Sleep_resistance) {
-            You_feel("rather tired.");
-            nomul(-rnd(5));
-            multi_reason = "sleeping off a magical draught";
-            nomovemsg = You_can_move_again;
-            exercise(A_DEX, FALSE);
+        if (!Free_action) {
+            int turns = scale_by_fraction(rnd(5), FULL_PROPERTY - FSleep_resistance);
+            if (turns > 0) {
+                You_feel("rather tired.");
+                nomul(-turns);
+                multi_reason = "sleeping off a magical draught";
+                nomovemsg = You_can_move_again;
+                exercise(A_DEX, FALSE);
+            }
         } else
             You("yawn.");
         break;

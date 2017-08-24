@@ -862,10 +862,8 @@ register struct permonst *ptr;
         break;
     case SLEEP_RES:
         debugpline0("Trying to give sleep resistance");
-        if (!(HSleep_resistance & FROMOUTSIDE)) {
-            You_feel("wide awake.");
-            HSleep_resistance |= FROMOUTSIDE;
-        }
+        You_feel("wide awake.");
+        set_itimeout(&HSleep_resistance, 200);
         break;
     case COLD_RES:
         debugpline0("Trying to give cold resistance");
@@ -1805,7 +1803,7 @@ struct obj *otmp;
             pline("My, that was a %s %s!",
                   Hallucination ? "primo" : "yummy",
                   singular(otmp, xname));
-        } else if (otmp->otyp == APPLE && otmp->cursed && !Sleep_resistance) {
+        } else if (otmp->otyp == APPLE && otmp->cursed && !(Sleep_resistance)) {
             ; /* skip core joke; feedback deferred til fpostfx() */
 
 #if defined(MAC) || defined(MACOSX)
@@ -1994,7 +1992,7 @@ struct obj *otmp;
             /* Give sleep resistance instead */
             if (!(HSleep_resistance & FROMOUTSIDE))
                 accessory_has_effect(otmp);
-            if (!Sleep_resistance)
+            if (!(HSleep_resistance & INTRINSIC))
                 You_feel("wide awake.");
             HSleep_resistance |= FROMOUTSIDE;
             break;

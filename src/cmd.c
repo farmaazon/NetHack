@@ -2171,8 +2171,11 @@ int final;
                           you_are("cold resistant", property_percents(COLD_RES)),
                           you_are("invlunerable to cold", property_percents(COLD_RES)),
                           you_will("be healed by cold", property_percents(COLD_RES)));
-    if (Sleep_resistance)
-        you_are("sleep resistant", from_what(SLEEP_RES));
+    Inform_about_fraction(FSleep_resistance,,
+                          you_are("somewhat sleep resistant", property_percents(SLEEP_RES)),
+                          you_are("sleep resistant", property_percents(SLEEP_RES)),
+                          you_are("invlunerable to sleep magic", property_percents(SLEEP_RES)),
+                          you_are("invlunerable to sleep magic", property_percents(SLEEP_RES)));
     if (Disint_resistance)
         you_are("disintegration-resistant", from_what(DISINT_RES));
     Inform_about_fraction(FShock_resistance,,

@@ -35,7 +35,8 @@
 
 #define HSleep_resistance u.uprops[SLEEP_RES].intrinsic
 #define ESleep_resistance u.uprops[SLEEP_RES].extrinsic
-#define Sleep_resistance (HSleep_resistance || ESleep_resistance)
+#define FSleep_resistance prop_fraction(&u.uprops[SLEEP_RES])
+#define Sleep_resistance (FSleep_resistance >= FULL_PROPERTY)
 
 #define HDisint_resistance u.uprops[DISINT_RES].intrinsic
 #define EDisint_resistance u.uprops[DISINT_RES].extrinsic

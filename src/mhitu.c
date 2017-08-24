@@ -1089,11 +1089,14 @@ register struct attack *mattk;
         if (uncancelled && multi >= 0 && !rn2(5)) {
             if (Sleep_resistance)
                 break;
-            fall_asleep(-rnd(10), TRUE);
-            if (Blind)
-                You("are put to sleep!");
-            else
-                You("are put to sleep by %s!", mon_nam(mtmp));
+            if (dmg > 0) {
+                fall_asleep(-rnd(10), TRUE);
+                if (Blind)
+                    You("are put to sleep!");
+                else
+                    You("are put to sleep by %s!", mon_nam(mtmp));
+            }
+            dmg = 0;
         }
         break;
     case AD_BLND:

@@ -2345,8 +2345,9 @@ boolean ordinary;
     case WAN_SLEEP:
     case SPE_SLEEP:
         learn_it = TRUE;
-        if (Sleep_resistance) {
+        if (FSleep_resistance > FULL_PROPERTY/2)
             shieldeff(u.ux, u.uy);
+        if (Sleep_resistance) {
             You("don't feel sleepy!");
         } else {
             pline_The("sleep ray hits you!");
@@ -3670,8 +3671,9 @@ xchar sx, sy;
             destroy_item(POTION_CLASS, AD_COLD);
         break;
     case ZT_SLEEP:
-        if (Sleep_resistance) {
+        if (FSleep_resistance > FULL_PROPERTY/2)
             shieldeff(u.ux, u.uy);
+        if (Sleep_resistance) {
             You("don't feel sleepy.");
         } else {
             fall_asleep(-d(nd, 25), TRUE); /* sleep ray */

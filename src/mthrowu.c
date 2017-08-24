@@ -985,8 +985,8 @@ struct attack *mattk;
                  */
                 if (!rn2(3))
                     mtmp->mspec_used = 10 + rn2(20);
-                if (typ == AD_SLEE && !Sleep_resistance)
-                    mtmp->mspec_used += rnd(20);
+                if (typ == AD_SLEE)
+                    mtmp->mspec_used += scale_by_fraction(rnd(20), max(FULL_PROPERTY - FSleep_resistance, 0));
             } else
                 impossible("Breath weapon %d used", typ - 1);
         }
