@@ -3003,10 +3003,10 @@ long
 increased_fraction(prop, value)
 long prop, value;
 {
-    int current = (prop & FRACTION);
+    long current = (prop & FRACTION);
     value = min(FRACTION - current, value);
     value = max(-current, value);
-    return (prop & !current) | ((current + value) & FRACTION);
+    return (prop & ~current) | ((current + value) & FRACTION);
 }
 
 
@@ -3109,10 +3109,13 @@ struct prop *prop;
     change = 0;
     do {
         to_increase = FULL_PROPERTY - value - change;
-        difficulty = (FULL_PROPERTY - labs(to_increase))/FRACTION_UNIT/2 + 1;
+
+        difficulty = (FULL_PROPERTY - labs(to_increase))/FRACTION_UNIT/3 + 1;
         x -= rnd(difficulty) + 3;
+
         if (x > 0 && to_increase != 0)
-            change += (to_increase > 0 ? 1 : -1)*rnd((labs(to_increase)/FRACTION_UNIT+6)/7)*FRACTION_UNIT;
+            change += (to_increase > 0 ? 1 : -1)*rnd((labs(to_increase)/FRACTION_UNIT+15)/16)*FRACTION_UNIT;
+
     } while(x > 0 && to_increase != 0 && change > -value);
 
     change = max(change, -value);

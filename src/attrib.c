@@ -943,7 +943,16 @@ int oldlevel, newlevel;
         }
         prevabil = *(abil->ability);
         if (oldlevel < abil->ulevel && newlevel >= abil->ulevel) {
-            *(abil->ability) |= mask;
+            /* Abilities gained at level 1 can never be lost
+             * via level loss, only via means that remove _any_
+             * sort of ability.  A "gain" of such an ability from
+             * an outside source is devoid of meaning, so we set
+             * FROMOUTSIDE to avoid such gains.
+             */
+            if (abil->ulevel == 1)
+                *(abil->ability) |= (mask | FROMOUTSIDE);
+            else
+                *(abil->ability) |= mask;
             if (!(*(abil->ability) & INTRINSIC & ~mask)
                     /* if fraction is full trained, a new intrisnic does not increase it */
                     || (*(abil->ability) & FRACTION) == FRACTION) {
