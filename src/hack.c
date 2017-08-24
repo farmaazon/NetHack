@@ -2783,7 +2783,7 @@ maybe_wail()
                               SHOCK_RES, FIRE_RES, SLEEP_RES, DISINT_RES,
                               TELEPORT_CONTROL, STEALTH, FAST, INVIS };
 
-#define POWER_MASK (FROMRACE | FROMEXPER | FULL_PROPERTY | FULL_PROPERTY >> 1 | FULL_PROPERTY >> 2)
+#define POWER_MASK (INTRINSIC | FULL_PROPERTY | FULL_PROPERTY >> 1 | FULL_PROPERTY >> 2)
 
     if (moves <= wailmsg + 50)
         return;
@@ -3003,9 +3003,10 @@ long
 increased_fraction(prop, value)
 long prop, value;
 {
-    value = min(FRACTION - (prop & FRACTION), value);
-    value = max(-(prop & FRACTION), value);
-    return (prop^(prop & FRACTION)) | (((prop & FRACTION) + value) & FRACTION);
+    int current = (prop & FRACTION);
+    value = min(FRACTION - current, value);
+    value = max(-current, value);
+    return (prop & !current) | ((current + value) & FRACTION);
 }
 
 
@@ -3014,8 +3015,8 @@ set_fraction(prop_l, fraction)
 long *prop_l, fraction;
 {
     if (fraction < 0)
-        return;
-    *prop_l ^= *prop_l & FRACTION;
+        fraction = 0;
+    *prop_l &= ~(*prop_l & FRACTION);
     *prop_l |= fraction & FRACTION;
 }
 
@@ -3037,7 +3038,7 @@ struct prop *prop;
         gained = (7*FULL_PROPERTY)/8;
     else if (prop->extrinsic || prop->intrinsic & TIMEOUT)
         gained = FULL_PROPERTY/2;
-    else if (prop->intrinsic & (FROMRACE | FROMEXPER))
+    else if (prop->intrinsic & INTRINSIC)
         gained = FULL_PROPERTY/4;
     else
         gained = 0;
@@ -3108,10 +3109,10 @@ struct prop *prop;
     change = 0;
     do {
         to_increase = FULL_PROPERTY - value - change;
-        difficulty = (FULL_PROPERTY - labs(to_increase))/FRACTION_UNIT/3 + 1;
+        difficulty = (FULL_PROPERTY - labs(to_increase))/FRACTION_UNIT/2 + 1;
         x -= rnd(difficulty) + 3;
         if (x > 0 && to_increase != 0)
-            change += (to_increase > 0 ? 1 : -1)*rnd((labs(to_increase)/FRACTION_UNIT+15)/16)*FRACTION_UNIT;
+            change += (to_increase > 0 ? 1 : -1)*rnd((labs(to_increase)/FRACTION_UNIT+6)/7)*FRACTION_UNIT;
     } while(x > 0 && to_increase != 0 && change > -value);
 
     change = max(change, -value);

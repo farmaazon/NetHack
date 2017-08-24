@@ -128,9 +128,9 @@ struct prop {
 /* Timed properties */
 #define TIMEOUT 0x0000ffffL     /* Up to 65535 turns */
                                 /* Permanent properties */
-#define FRACTION 0x01ff0000L    /* Fraction of propery gained by training, prayer, thrones, etc. */
-#define FULL_PROPERTY 0x01000000L
-#define FROMOUTSIDE 0x01ff0000L /* Used by 100%-or-nothing properties (for compatibility) */
+#define FRACTION 0x00ff0000L    /* Fraction of propery gained by training, prayer, thrones, etc. */
+#define FULL_PROPERTY 0x00800000L
+#define FROMOUTSIDE 0x010000L   /* Used by 100%-or-nothing properties (for compatibility) */
 #define FROMEXPER 0x02000000L   /* Gain/lose with experience, for role */
 #define FROMRACE 0x04000000L    /* Gain/lose with experience, for race */
 /* Control flags */

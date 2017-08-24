@@ -944,13 +944,15 @@ int oldlevel, newlevel;
         prevabil = *(abil->ability);
         if (oldlevel < abil->ulevel && newlevel >= abil->ulevel) {
             *(abil->ability) |= mask;
-            if (!(*(abil->ability) & (FROMRACE | FROM_EXP) & ~mask) || (*(abil->ability) & FROMOUTSIDE)^FROMOUTSIDE) {
+            if (!(*(abil->ability) & INTRINSIC & ~mask)
+                    /* if fraction is full trained, a new intrisnic does not increase it */
+                    || (*(abil->ability) & FRACTION) == FRACTION) {
                 if (*(abil->gainstr))
                     You_feel("%s!", abil->gainstr);
             }
         } else if (oldlevel >= abil->ulevel && newlevel < abil->ulevel) {
             *(abil->ability) &= ~mask;
-            if (!(*(abil->ability) & (FROMRACE | FROM_EXP)) || (*(abil->ability) & FROMOUTSIDE)^FROMOUTSIDE) {
+            if (!(*(abil->ability) & INTRINSIC) || (*(abil->ability) & FROMOUTSIDE)^FROMOUTSIDE) {
                 if (*(abil->losestr))
                     You_feel("%s!", abil->losestr);
                 else if (*(abil->gainstr))
