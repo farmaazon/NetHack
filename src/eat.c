@@ -872,10 +872,8 @@ register struct permonst *ptr;
         break;
     case DISINT_RES:
         debugpline0("Trying to give disintegration resistance");
-        if (!(HDisint_resistance & FROMOUTSIDE)) {
-            You_feel(Hallucination ? "totally together, man." : "very firm.");
-            HDisint_resistance |= FROMOUTSIDE;
-        }
+        You_feel(Hallucination ? "totally together, man." : "very firm.");
+        set_itimeout(&HDisint_resistance, 300);
         break;
     case SHOCK_RES: /* shock (electricity) resistance */
         debugpline0("Trying to give shock resistance");

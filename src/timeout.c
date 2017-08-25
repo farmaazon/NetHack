@@ -47,11 +47,11 @@ const struct propname {
     { COLD_RES, "cold resistance" },
     { SHOCK_RES, "shock resistance" },
     { POISON_RES, "poison resistance" },
+    { SLEEP_RES, "sleep resistance" },
+    { DISINT_RES, "disintegration resistance" },
     /* properties beyond here don't have timed values during normal play,
        so there's no much point in trying to order them sensibly;
        they're either on or off based on equipment, role, actions, &c */
-    { SLEEP_RES, "sleep resistance" },
-    { DISINT_RES, "disintegration resistance" },
     { ACID_RES, "acid resistance" },
     { STONE_RES, "stoning resistance" },
     { DRAIN_RES, "drain resistance" },
@@ -558,8 +558,16 @@ nh_timeout()
                     You_feel("ungrounded.");
                 else
                     You_feel("conductive.");
+                break;
             case POISON_RES:
                 You_feel("a little sick.");
+                break;
+            case SLEEP_RES:
+                You_feel("sleepy");
+                break;
+            case DISINT_RES:
+                You_feel("fragile");
+                break;
             }
         }
 

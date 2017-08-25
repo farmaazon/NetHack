@@ -297,18 +297,21 @@ boolean thrown_weapon; /* thrown weapons are less deadly */
 
     i = !fatal ? 1 : rn2(fatal + (thrown_weapon ? 20 : 0));
     if (i == 0 && typ != A_CHA && FPoison_resistance < FULL_PROPERTY) {
-        u.uhp -= resist_dmg(u.uhpmax, POISON_RES);
-
-        /* instant kill if hp drop below 0 */
+        loss = resist_dmg(Upolyd ? u.mhmax : u.uhpmax, POISON_RES);
+        int *hp = Upolyd ? &u.mh : &u.uhp;
+        /* FractionedProps - replaced instakill with (resisted) damage
+           equal to maxhp, without possibility to rehumanize */
+        *hp -= loss;
         context.botl = TRUE;
         pline_The("poison was deadly...");
-        if (u.uhp < 1) {
+        if (*hp < 1) {
             killer.format = kprefix;
             Strcpy(killer.name, pkiller);
             /* "Poisoned by a poisoned ___" is redundant */
             done(strstri(pkiller, "poison") ? DIED : POISONING);
+        } else {
+            train();
         }
-        train();
     } else if (i > 5) {
         /* HP damage; more likely--but less severe--with missiles */
         loss = thrown_weapon ? rnd(6) : rn1(10, 6);

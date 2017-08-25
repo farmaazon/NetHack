@@ -594,7 +594,7 @@ aligntyp resp_god;
             (void) destroy_arm(uarm);
         if (uarmu && !uarm && !uarmc)
             (void) destroy_arm(uarmu);
-        if (!Disint_resistance) {
+        if (FDisint_resistance < FULL_PROPERTY) {
             fry_by_god(resp_god, TRUE);
         } else {
             You("bask in its %s glow for a minute...", NH_BLACK);

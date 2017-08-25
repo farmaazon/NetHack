@@ -159,10 +159,14 @@ int expltype;
                     explmask[i][j] = FCold_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_DISN:
-                    explmask[i][j] = (olet == WAND_CLASS)
-                                         ? !!(nonliving(youmonst.data)
-                                              || is_demon(youmonst.data))
-                                         : !!Disint_resistance;
+                    uhurtmask = FALSE;
+                    if (olet == WAND_CLASS) {
+                        explmask[i][j] = !!(nonliving(youmonst.data) || is_demon(youmonst.data));
+                        damu = 0;
+                    } else {
+                        explmask[i][j] = FDisint_resistance >= FULL_PROPERTY/2;
+                        damu = resist_dmg(damu, DISINT_RES);
+                    }
                     break;
                 case AD_ELEC:
                     uhurtmask = FALSE;

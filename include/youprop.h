@@ -40,7 +40,8 @@
 
 #define HDisint_resistance u.uprops[DISINT_RES].intrinsic
 #define EDisint_resistance u.uprops[DISINT_RES].extrinsic
-#define Disint_resistance (HDisint_resistance || EDisint_resistance)
+//#define Disint_resistance (HDisint_resistance || EDisint_resistance)
+#define FDisint_resistance prop_fraction(&u.uprops[DISINT_RES])
 
 #define HShock_resistance u.uprops[SHOCK_RES].intrinsic
 #define EShock_resistance u.uprops[SHOCK_RES].extrinsic

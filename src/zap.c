@@ -3681,18 +3681,34 @@ xchar sx, sy;
         break;
     case ZT_DEATH:
         if (abstyp == ZT_BREATH(ZT_DEATH)) {
-            if (Disint_resistance) {
-                You("are not disintegrated.");
-                break;
-            } else if (uarms) {
-                /* destroy shield; other possessions are safe */
-                (void) destroy_arm(uarms);
-                break;
-            } else if (uarm) {
+            /* this flag will remain false until something will be disintegrated
+               (you or your gear) */
+            boolean disintegrated = !Fraction_test(FDisint_resistance);
+
+            if (disintegrated && uarms) {
+                /* try to destroy shield; other possessions are safe */
+                if ((disintegrated = !Fraction_test(FDisint_resistance)))
+                {
+                    (void) destroy_arm(uarms);
+                    break;
+                }
+            }
+            if (disintegrated && uarm) {
                 /* destroy suit; if present, cloak goes too */
-                if (uarmc)
+                /* each of these items give chance of persisting */
+                if (uarmc && (disintegrated = !Fraction_test(FDisint_resistance)))
                     (void) destroy_arm(uarmc);
-                (void) destroy_arm(uarm);
+                /* still disintegration is unresisted? */
+                if (disintegrated && (disintegrated = !Fraction_test(FDisint_resistance)))
+                {
+                    (void) destroy_arm(uarm);
+                    break;
+                }
+            }
+
+            if (!disintegrated) {
+                You("are not disintegrated.");
+                train_prop(Upolyd ? u.mhmax : u.uhpmax, &u.uprops[DISINT_RES]);
                 break;
             }
             /* no shield or suit, you're dead; wipe out cloak
