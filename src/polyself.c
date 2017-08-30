@@ -373,7 +373,7 @@ newman()
                    : urace.noun);
     if (Slimed) {
         Your("body transforms, but there is still slime on you.");
-        make_slimed(10L, (const char *) 0);
+        make_slimed(FULL_PROPERTY/2, (const char *) 0);
     }
 
     context.botl = 1;

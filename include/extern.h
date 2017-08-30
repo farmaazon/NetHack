@@ -853,6 +853,7 @@ E boolean FDECL(check_capacity, (const char *));
 E int FDECL(inv_cnt, (BOOLEAN_P));
 E long FDECL(money_cnt, (struct obj *));
 E long FDECL(increased_fraction, (long, long));
+E void FDECL(set_fraction, (long *, long));
 E long FDECL(prop_fraction, (struct prop *));
 E int FDECL(scale_by_fraction, (int, long));
 E int FDECL(resist_injury, (int, int, int));

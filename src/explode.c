@@ -140,26 +140,24 @@ int expltype;
                 explmask[i][j] = 0;
 
             if (i + x - 1 == u.ux && j + y - 1 == u.uy) {
-                boolean uhurtmask = TRUE;
                 explmask[i][j] = 0;
+                uhurt = 2;
                 switch (adtyp) {
                 case AD_PHYS:
                     break;
                 case AD_MAGM:
                     explmask[i][j] = !!Antimagic;
+                    uhurt = 1;
                     break;
                 case AD_FIRE:
-                    uhurtmask = FALSE;
                     damu = resist_dmg(damu, FIRE_RES);
                     explmask[i][j] = FFire_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_COLD:
-                    uhurtmask = FALSE;
                     damu = resist_dmg(damu, COLD_RES);
                     explmask[i][j] = FCold_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_DISN:
-                    uhurtmask = FALSE;
                     if (olet == WAND_CLASS) {
                         explmask[i][j] = !!(nonliving(youmonst.data) || is_demon(youmonst.data));
                         damu = 0;
@@ -169,24 +167,24 @@ int expltype;
                     }
                     break;
                 case AD_ELEC:
-                    uhurtmask = FALSE;
                     damu = resist_dmg(damu, SHOCK_RES);
                     explmask[i][j] = FShock_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_DRST:
-                    uhurtmask = FALSE;
                     damu = resist_dmg(damu, POISON_RES);
                     explmask[i][j] = FPoison_resistance >= FULL_PROPERTY/2;
                     break;
                 case AD_ACID:
-                    explmask[i][j] = !!Acid_resistance;
+                    damu = resist_dmg(damu, ACID_RES);
+                    u.utraining /= 4;
+                    explmask[i][j] = FAcid_resistance >= FULL_PROPERTY/2;
                     physical_dmg = TRUE;
                     break;
                 default:
                     impossible("explosion type %d?", adtyp);
                     break;
                 }
-                uhurt = 2 - (uhurtmask ? explmask[i][j] : 0);
+
 
             }
             /* can be both you and mtmp if you're swallowed or riding */

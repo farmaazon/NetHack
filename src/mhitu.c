@@ -806,7 +806,7 @@ struct permonst *mdat;
         You_feel("a slight illness.");
         return FALSE;
     } else {
-        make_sick(Sick ? Sick / 3L + 1L : (long) rn1(ACURR(A_CON), 20),
+        make_sick(Sick ? 2L*(FULL_PROPERTY + SICK)/3L : (long)rn1(ACURR(A_CON), 26 - ACURR(A_CON))*FULL_PROPERTY/32,
                   mdat->mname, TRUE, SICK_NONVOMITABLE);
         return TRUE;
     }
@@ -1180,8 +1180,12 @@ register struct attack *mattk;
         break;
     case AD_DRLI:
         hitmsg(mtmp, mattk);
-        if (uncancelled && !rn2(3) && !Drain_resistance) {
+        if (uncancelled && !rn2(3) && !Fraction_test(FDrain_resistance)) {
+            set_trained_prop(DRAIN_RES);
+            u.utraining = u.ulevel;
+            /* will clear training data if died of overdraining */
             losexp("life drainage");
+            train();
         }
         break;
     case AD_LEGS: {
@@ -1505,14 +1509,17 @@ register struct attack *mattk;
     case AD_ACID:
         hitmsg(mtmp, mattk);
         if (!mtmp->mcan && !rn2(3))
-            if (Acid_resistance) {
-                pline("You're covered in %s, but it seems harmless.",
-                      hliquid("acid"));
-                dmg = 0;
-            } else {
-                pline("You're covered in %s!  It burns!", hliquid("acid"));
+            Inform_about_fraction(FAcid_resistance,
+                                  pline("You're covered in %s!  It burns a lot!", hliquid("acid")),
+                                  pline("You're covered in %s!  It burns!", hliquid("acid")),
+                                  pline("You're covered in %s!", hliquid("acid")),
+                                  pline("You're covered in %s, but it seems harmless.", hliquid("acid")),
+                                  pline("You're covered in %s, but it seems to heal you", hliquid("acid")));
+
+            dmg = resist_dmg(dmg, ACID_RES);
+            u.utraining /= 4; /* Acid resistance is very hard to train */
+            if (!Fraction_test(FAcid_resistance))
                 exercise(A_STR, FALSE);
-            }
         else
             dmg = 0;
         break;
@@ -1597,7 +1604,7 @@ register struct attack *mattk;
             dmg = 0;
         } else if (!Slimed) {
             You("don't feel very well.");
-            make_slimed(10L, (char *) 0);
+            make_slimed(FULL_PROPERTY/2, (char *) 0);
             delayed_killer(SLIMED, KILLED_BY_AN, mtmp->data->mname);
         } else
             pline("Yuck!");
@@ -1865,16 +1872,23 @@ register struct attack *mattk;
         }
         break;
     case AD_ACID:
-        if (Acid_resistance) {
-            You("are covered with a seemingly harmless goo.");
-            tmp = 0;
-        } else {
-            if (Hallucination)
+        if (Hallucination) {
+            if (FAcid_resistance < FULL_PROPERTY)
                 pline("Ouch!  You've been slimed!");
             else
-                You("are covered in slime!  It burns!");
+                pline("You've been slimed!");
+        } else
+            Inform_about_fraction(FAcid_resistance,
+                                  pline("You're covered in %s!  It burns a lot!", hliquid("acid")),
+                                  pline("You're covered in %s!  It burns!", hliquid("acid")),
+                                  pline("You're covered in %s!", hliquid("acid")),
+                                  pline("You're covered in with a seemingly harmless goo."),
+                                  pline("You're covered in with a seemingly restorative goo."));
+        tmp = resist_dmg(tmp, ACID_RES);
+        u.utraining /= 4;
+        if (!Fraction_test(FAcid_resistance))
             exercise(A_STR, FALSE);
-        }
+
         break;
     case AD_BLND:
         if (can_blnd(mtmp, &youmonst, mattk->aatyp, (struct obj *) 0)) {

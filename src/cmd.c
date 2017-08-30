@@ -1231,14 +1231,14 @@ wiz_intrinsic(VOID_ARGS)
             case HALLUC:
                 make_hallucinated(newtimeout, TRUE, 0L);
                 break;
-            case SICK:
+            case SICK: /* not real timeout, but still useful to set at proper value */
                 typ = !rn2(2) ? SICK_VOMITABLE : SICK_NONVOMITABLE;
-                make_sick(newtimeout, wizintrinsic, TRUE, typ);
+                make_sick(FULL_PROPERTY/2, wizintrinsic, TRUE, typ);
                 break;
             case SLIMED:
                 Sprintf(buf, fmt,
                         !Slimed ? "" : " still", "turning into slime");
-                make_slimed(newtimeout, buf);
+                make_slimed(FULL_PROPERTY/2, buf);
                 break;
             case STONED:
                 Sprintf(buf, fmt,
@@ -1924,9 +1924,9 @@ int final;
     if (Sick) {
         /* prayer lumps these together; botl puts Ill before FoodPois */
         if (u.usick_type & SICK_NONVOMITABLE)
-            you_are("terminally sick from illness", "");
+            you_are("terminally sick from illness", property_percents(SICK));
         if (u.usick_type & SICK_VOMITABLE)
-            you_are("terminally sick from food poisoning", "");
+            you_are("terminally sick from food poisoning", property_percents(SICK));
     }
     if (Vomiting)
         you_are("nauseated", "");
@@ -2180,23 +2180,32 @@ int final;
                           you_are("somewhat disintegration-resistant", property_percents(DISINT_RES)),
                           you_are("shock disintegration-resistant", property_percents(DISINT_RES)),
                           you_are("invlunerable to disintegration", property_percents(DISINT_RES)),
-                          you_will("be healed by disintegration", property_percents(DISINT_RES)));
+                          you_are("invlunerable to disintegration", property_percents(DISINT_RES)));
     Inform_about_fraction(FShock_resistance,,
                           you_are("somewhat shock resistant", property_percents(COLD_RES)),
                           you_are("shock resistant", property_percents(COLD_RES)),
                           you_are("invlunerable to electricity", property_percents(COLD_RES)),
                           you_will("be healed by electricity", property_percents(COLD_RES)));
+    Inform_about_fraction(FAcid_resistance,,
+                          you_are("somewhat acid resistant", property_percents(POISON_RES)),
+                          you_are("acid resistant", property_percents(POISON_RES)),
+                          you_are("immune to acid", property_percents(POISON_RES)),
+                          you_will("be healed by acid", property_percents(POISON_RES)));
     Inform_about_fraction(FPoison_resistance,,
                           you_are("somewhat poison resistant", property_percents(POISON_RES)),
                           you_are("poison resistant", property_percents(POISON_RES)),
-                          you_are("invlunerable to poison", property_percents(POISON_RES)),
+                          you_are("immune to poison", property_percents(POISON_RES)),
                           you_will("be healed by poison", property_percents(POISON_RES)));
-    if (Acid_resistance)
-        you_are("acid resistant", from_what(ACID_RES));
-    if (Drain_resistance)
-        you_are("level-drain resistant", from_what(DRAIN_RES));
-    if (Sick_resistance)
-        you_are("immune to sickness", from_what(SICK_RES));
+    Inform_about_fraction(FDrain_resistance,,
+                          you_are("somewhat level-drain resistant", property_percents(DRAIN_RES)),
+                          you_are("level-drain resistant", property_percents(DRAIN_RES)),
+                          you_are("invlunerable level-drain", property_percents(DRAIN_RES)),
+                          you_will("be healed by level-draining", property_percents(DRAIN_RES)));
+    Inform_about_fraction(FSick_resistance,,
+                          you_are("slightly resistant to sickness", property_percents(SICK_RES)),
+                          you_are("resistant to sickness", property_percents(SICK_RES)),
+                          you_are("immune to sickness", from_what(SICK_RES)),
+                          you_are("immune to sickness", from_what(SICK_RES)));
     if (Stone_resistance)
         you_are("petrification resistant", from_what(STONE_RES));
     if (Halluc_resistance)

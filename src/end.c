@@ -854,11 +854,13 @@ int how;
         u.uhunger = 500;
         newuhs(FALSE);
     }
-    /* cure impending doom of sickness hero won't have time to fix */
-    if ((Sick & TIMEOUT) == 1L) {
+    /* cure impending doom of sickness or sliming hero won't have time to fix */
+    if ((Sick & FRACTION) >= 31*FULL_PROPERTY/32) {
         u.usick_type = 0;
-        set_itimeout(&Sick, 0L);
+        set_fraction(&Sick, 0L);
     }
+    if ((Slimed & FRACTION) >= 19*FULL_PROPERTY/20)
+        set_fraction(&Slimed, 0L);
     if (how == CHOKING)
         init_uhunger();
     nomovemsg = "You survived that attempt on your life.";

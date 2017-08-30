@@ -40,7 +40,6 @@
 
 #define HDisint_resistance u.uprops[DISINT_RES].intrinsic
 #define EDisint_resistance u.uprops[DISINT_RES].extrinsic
-//#define Disint_resistance (HDisint_resistance || EDisint_resistance)
 #define FDisint_resistance prop_fraction(&u.uprops[DISINT_RES])
 
 #define HShock_resistance u.uprops[SHOCK_RES].intrinsic
@@ -53,7 +52,7 @@
 
 #define HDrain_resistance u.uprops[DRAIN_RES].intrinsic
 #define EDrain_resistance u.uprops[DRAIN_RES].extrinsic
-#define Drain_resistance (HDrain_resistance || EDrain_resistance)
+#define FDrain_resistance prop_fraction(&u.uprops[DRAIN_RES])
 
 /* Hxxx due to FROMFORM only */
 #define HAntimagic u.uprops[ANTIMAGIC].intrinsic
@@ -62,7 +61,7 @@
 
 #define HAcid_resistance u.uprops[ACID_RES].intrinsic
 #define EAcid_resistance u.uprops[ACID_RES].extrinsic
-#define Acid_resistance (HAcid_resistance || EAcid_resistance)
+#define FAcid_resistance prop_fraction(&u.uprops[ACID_RES])
 
 #define HStone_resistance u.uprops[STONE_RES].intrinsic
 #define EStone_resistance u.uprops[STONE_RES].extrinsic
@@ -70,7 +69,8 @@
 
 /* Intrinsics only */
 #define HSick_resistance u.uprops[SICK_RES].intrinsic
-#define Sick_resistance (HSick_resistance || defends(AD_DISE, uwep))
+#define FSick_resistance prop_fraction(&u.uprops[SICK_RES])
+#define Sick_resistance (FSick_resistance >= FULL_PROPERTY || defends(AD_DISE, uwep))
 
 #define Invulnerable u.uprops[INVULNERABLE].intrinsic /* [Tom] */
 
@@ -100,6 +100,7 @@
 /* ...blind because of a blindfold, and *only* that */
 
 #define Sick u.uprops[SICK].intrinsic
+#define FSick prop_fraction(&u.uprops[SICK])
 #define Stoned u.uprops[STONED].intrinsic
 #define Strangled u.uprops[STRANGLED].intrinsic
 #define Vomiting u.uprops[VOMITING].intrinsic

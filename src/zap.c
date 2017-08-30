@@ -2299,9 +2299,12 @@ boolean ordinary;
         break;
 
     case SPE_DRAIN_LIFE:
-        if (!Drain_resistance) {
+        if (!Fraction_test(FDrain_resistance)) {
             learn_it = TRUE; /* (no effect for spells...) */
+            set_trained_prop(DRAIN_RES);
+            u.utraining = u.ulevel;
             losexp("life drainage");
+            train();
         }
         damage = 0; /* No additional damage */
         break;
@@ -3751,14 +3754,17 @@ xchar sx, sy;
         poisoned("blast", A_DEX, "poisoned blast", 15, FALSE);
         break;
     case ZT_ACID:
-        if (Acid_resistance) {
-            pline_The("%s doesn't hurt.", hliquid("acid"));
-            dam = 0;
-        } else {
-            pline_The("%s burns!", hliquid("acid"));
-            dam = d(nd, 6);
+        Inform_about_fraction(FAcid_resistance,
+                              pline_The("%s burns a lot!", hliquid("acid")),
+                              pline_The("%s burns!", hliquid("acid")),
+                              pline_The("%s burns a little.", hliquid("acid")),
+                              pline_The("%s doesn't hurt.", hliquid("acid")),
+                              You_feel("better!"));
+
+        dam = resist_dmg(d(nd, 6), ACID_RES);
+        u.utraining /= 4;
+        if (!Fraction_test(FAcid_resistance))
             exercise(A_STR, FALSE);
-        }
         /* using two weapons at once makes both of them more vulnerable */
         if (!rn2(u.twoweap ? 3 : 6))
             acid_damage(uwep);

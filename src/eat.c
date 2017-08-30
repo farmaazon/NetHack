@@ -722,7 +722,7 @@ register int pm;
     case PM_GREEN_SLIME:
         if (!Slimed && !Unchanging && !slimeproof(youmonst.data)) {
             You("don't feel very well.");
-            make_slimed(10L, (char *) 0);
+            make_slimed(FULL_PROPERTY/2, (char *) 0);
             delayed_killer(SLIMED, KILLED_BY_AN, "");
         }
     /* Fall through */
@@ -1593,13 +1593,13 @@ struct obj *otmp;
         if (Sick_resistance) {
             pline("It doesn't seem at all sickening, though...");
         } else {
-            long sick_time;
+            long new_fsick;
 
-            sick_time = (long) rn1(10, 10);
+            new_fsick = (long) rn1(10, 13)*FULL_PROPERTY/32;
             /* make sure new ill doesn't result in improvement */
-            if (Sick && (sick_time > Sick))
-                sick_time = (Sick > 1L) ? Sick - 1L : 1L;
-            make_sick(sick_time, corpse_xname(otmp, "rotted", CXN_NORMAL),
+            if (FSick > new_fsick)
+                new_fsick = min(FULL_PROPERTY-1, FSick + FULL_PROPERTY/32);
+            make_sick(new_fsick, corpse_xname(otmp, "rotted", CXN_NORMAL),
                       TRUE, SICK_VOMITABLE);
         }
         if (carried(otmp))
@@ -1607,10 +1607,16 @@ struct obj *otmp;
         else
             useupf(otmp, 1L);
         return 2;
-    } else if (acidic(&mons[mnum]) && !Acid_resistance) {
-        tp++;
-        You("have a very bad case of stomach acid.");   /* not body_part() */
-        losehp(rnd(15), !glob ? "acidic corpse" : "acidic glob",
+    } else if (acidic(&mons[mnum])) {
+        tp += !!(FAcid_resistance == FULL_PROPERTY);
+        Inform_about_fraction(FAcid_resistance,
+                              You("have a very bad case of stomach acid."),   /* not body_part() */
+                              You("have a bad case of stomach acid."),
+                              You("have a mild case of stomach acid."),
+                              ,
+                              You_feel("better!"));
+
+        losehp(resist_dmg(rnd(15), ACID_RES), !glob ? "acidic corpse" : "acidic glob",
                KILLED_BY_AN); /* acid damage */
     } else if (poisonous(&mons[mnum]) && rn2(5)) {
         tp++;
@@ -2338,7 +2344,7 @@ struct obj *otmp;
         else
             return 2;
     }
-    if (cadaver && acidic(&mons[mnum]) && !Acid_resistance) {
+    if (cadaver && acidic(&mons[mnum]) && FAcid_resistance < FULL_PROPERTY) {
         Sprintf(buf, "%s rather acidic. %s", foodsmell, eat_it_anyway);
         if (yn_function(buf, ynchars, 'n') == 'n')
             return 1;

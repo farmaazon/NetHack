@@ -1859,8 +1859,7 @@ struct obj *obj;
 
         switch (rn2(13) / 2) { /* case 6 is half as likely as the others */
         case 0:
-            make_sick((Sick & TIMEOUT) ? (Sick & TIMEOUT) / 3L + 1L
-                                       : (long) rn1(ACURR(A_CON), 20),
+            make_sick(Sick ? (2L*FULL_PROPERTY + SICK)/3L : (long)rn1(ACURR(A_CON), 26 - ACURR(A_CON))*FULL_PROPERTY/32,
                       xname(obj), TRUE, SICK_NONVOMITABLE);
             break;
         case 1:
@@ -1900,11 +1899,12 @@ struct obj *obj;
 #define prop_trouble(X) trouble_list[trouble_count++] = prop2trbl(X)
 #define attr_trouble(Y) trouble_list[trouble_count++] = attr2trbl(Y)
 #define TimedTrouble(P) (((P) && !((P) & ~TIMEOUT)) ? ((P) & TIMEOUT) : 0L)
+#define StrengtenedTrouble(P) ((P) & FRACTION)
 
     trouble_count = unfixable_trbl = did_prop = did_attr = 0;
 
     /* collect property troubles */
-    if (TimedTrouble(Sick))
+    if (StrengtenedTrouble(Sick))
         prop_trouble(SICK);
     if (TimedTrouble(Blinded) > (long) u.ucreamed
         && !(u.uswallow

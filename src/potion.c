@@ -106,8 +106,8 @@ boolean talk;
 }
 
 void
-make_sick(xtime, cause, talk, type)
-long xtime;
+make_sick(strenght, cause, talk, type)
+long strenght;
 const char *cause; /* sickness cause */
 boolean talk;
 int type;
@@ -118,7 +118,7 @@ int type;
     if (Unaware)
         talk = FALSE;
 #endif
-    if (xtime > 0L) {
+    if (strenght > 0L) {
         if (Sick_resistance)
             return;
         if (!old) {
@@ -127,9 +127,9 @@ int type;
         } else {
             /* already sick */
             if (talk)
-                You_feel("%s worse.", xtime <= Sick / 2L ? "much" : "even");
+                You_feel("%s worse.", strenght*2 - FULL_PROPERTY >= Sick ? "much" : "even");
         }
-        set_itimeout(&Sick, xtime);
+        set_fraction(&Sick, strenght);
         u.usick_type |= type;
         context.botl = TRUE;
     } else if (old && (type & u.usick_type)) {
@@ -138,12 +138,13 @@ int type;
         if (u.usick_type) { /* only partly cured */
             if (talk)
                 You_feel("somewhat better.");
-            set_itimeout(&Sick, Sick * 2); /* approximation */
+            set_fraction(&Sick, max(Sick*2 - FULL_PROPERTY, 1)); /* approximation */
         } else {
             if (talk)
                 You_feel("cured.  What a relief!");
             Sick = 0L; /* set_itimeout(&Sick, 0L) */
         }
+        train_prop((u.ulevel+1)/2, &u.uprops[SICK_RES]);
         context.botl = TRUE;
     }
 
@@ -155,8 +156,8 @@ int type;
 }
 
 void
-make_slimed(xtime, msg)
-long xtime;
+make_slimed(strenght, msg)
+long strenght;
 const char *msg;
 {
     long old = Slimed;
@@ -165,8 +166,8 @@ const char *msg;
     if (Unaware)
         msg = 0;
 #endif
-    set_itimeout(&Slimed, xtime);
-    if ((xtime != 0L) ^ (old != 0L)) {
+    set_fraction(&Slimed, strenght);
+    if ((strenght != 0L) ^ (old != 0L)) {
         context.botl = TRUE;
         if (msg)
             pline1(msg);
@@ -1082,18 +1083,20 @@ register struct obj *otmp;
         break;
     }
     case POT_ACID:
-        if (Acid_resistance) {
-            /* Not necessarily a creature who _likes_ acid */
-            pline("This tastes %s.", Hallucination ? "tangy" : "sour");
-        } else {
+        Inform_about_fraction(FAcid_resistance,
+                              pline("This burns a lot!"),
+                              pline("This burns like acid!"),
+                              pline("This burns a little."),
+                              pline("This tastes %s.", Hallucination ? "tangy" : "sour"),
+                              pline("This tastes sweet!"));
+        {
             int dmg;
 
-            pline("This burns%s!",
-                  otmp->blessed ? " a little" : otmp->cursed ? " a lot"
-                                                             : " like acid");
-            dmg = d(otmp->cursed ? 2 : 1, otmp->blessed ? 4 : 8);
+            dmg = resist_dmg(d(otmp->cursed ? 2 : 1, otmp->blessed ? 4 : 8), ACID_RES);
+            u.utraining /= 4;
             losehp(Maybe_Half_Phys(dmg), "potion of acid", KILLED_BY_AN);
-            exercise(A_CON, FALSE);
+            if (!Fraction_test(FAcid_resistance))
+                exercise(A_CON, FALSE);
         }
         if (Stoned)
             fix_petrification();
@@ -1319,12 +1322,15 @@ boolean your_fault;
                 polyself(0);
             break;
         case POT_ACID:
-            if (!Acid_resistance) {
-                int dmg;
-                pline("This burns%s!",
-                      obj->blessed ? " a little"
-                                   : obj->cursed ? " a lot" : "");
-                dmg = d(obj->cursed ? 2 : 1, obj->blessed ? 4 : 8);
+            {
+                Inform_about_fraction(FAcid_resistance,
+                                      pline("This burns a lot!"),
+                                      pline("This burns!"),
+                                      pline("This burns a little"),
+                                      ,
+                                      You_feel(Hallucination ? " you'll be a better man!" : "better!"));
+                int dmg = resist_dmg(d(obj->cursed ? 2 : 1, obj->blessed ? 4 : 8), ACID_RES);
+                u.utraining /= 4;
                 losehp(Maybe_Half_Phys(dmg), "potion of acid", KILLED_BY_AN);
             }
             break;

@@ -75,14 +75,17 @@ const char *name; /* if null, then format `obj' */
             pline_The("silver sears your flesh!");
             exercise(A_CON, FALSE);
         }
-        if (is_acid && Acid_resistance) {
-            pline("It doesn't seem to hurt you.");
-        } else {
-            if (is_acid)
-                pline("It burns!");
-            losehp(dam, knm, kprefix); /* acid damage */
-            exercise(A_STR, FALSE);
+        if (is_acid) {
+            Inform_about_fraction(FAcid_resistance,
+                                  pline("It burns a lot!"),
+                                  pline("It burns!"),
+                                  pline("It burns sliglty."),
+                                  pline("It doesn't seem to hurt you."),
+                                  You_feel("better!"));
+            dam = resist_dmg(dam, ACID_RES);
+            u.utraining /= 4;
         }
+        losehp(dam, knm, kprefix);
         return 1;
     }
 }

@@ -801,7 +801,8 @@ struct monst *mtmp;
             set_trained_prop(POISON_RES);
             return yours ? FULL_PROPERTY - FPoison_resistance : (!resists_poison(mtmp))*FULL_PROPERTY;
         case AD_DRLI:
-            return (!(yours ? Drain_resistance : resists_drli(mtmp)))*FULL_PROPERTY;
+            set_trained_prop(DRAIN_RES);
+            return yours ? FULL_PROPERTY - FDrain_resistance : (!resists_drli(mtmp))*FULL_PROPERTY;
         case AD_STON:
             return (!(yours ? Stone_resistance : resists_ston(mtmp)))*FULL_PROPERTY;
         default:

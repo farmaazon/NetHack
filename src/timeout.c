@@ -9,7 +9,7 @@ STATIC_DCL void NDECL(stoned_dialogue);
 STATIC_DCL void NDECL(vomiting_dialogue);
 STATIC_DCL void NDECL(choke_dialogue);
 STATIC_DCL void NDECL(levitation_dialogue);
-STATIC_DCL void NDECL(slime_dialogue);
+STATIC_DCL void FDECL(slime_dialogue, (long));
 STATIC_DCL void NDECL(slip_or_trip);
 STATIC_DCL void FDECL(see_lamp_flicker, (struct obj *, const char *));
 STATIC_DCL void FDECL(lantern_message, (struct obj *));
@@ -280,11 +280,12 @@ static NEARDATA const char *const slime_texts[] = {
 };
 
 STATIC_OVL void
-slime_dialogue()
+slime_dialogue(turns_left)
+register long turns_left;
 {
-    register long i = (Slimed & TIMEOUT) / 2L;
+    register long i = turns_left / 2L;
 
-    if (((Slimed & TIMEOUT) % 2L) && i >= 0L && i < SIZE(slime_texts)) {
+    if ((turns_left % 2) && i >= 0L && i < SIZE(slime_texts)) {
         char buf[BUFSZ];
 
         Strcpy(buf, slime_texts[SIZE(slime_texts) - i - 1L]);
@@ -314,10 +315,97 @@ slime_dialogue()
 }
 
 void
+death_by_sliming(VOID_ARGS)
+{
+    struct kinfo *kptr = find_delayed_killer(SLIMED);
+    if (kptr && kptr->name[0]) {
+        killer.format = kptr->format;
+        Strcpy(killer.name, kptr->name);
+    } else {
+        killer.format = NO_KILLER_PREFIX;
+        Strcpy(killer.name, "turned into green slime");
+    }
+    dealloc_killer(kptr);
+    /* involuntarily break "never changed form" conduct */
+    u.uconduct.polyselfs++;
+    done(TURNED_SLIME);
+}
+
+void
 burn_away_slime()
 {
     if (Slimed) {
         make_slimed(0L, "The slime that covers you is burned away!");
+    }
+}
+
+void
+death_by_sickness(VOID_ARGS)
+{
+    struct kinfo *kptr = find_delayed_killer(SICK);
+    int m_idx;
+    You("die from your illness.");
+    if (kptr && kptr->name[0]) {
+        killer.format = kptr->format;
+        Strcpy(killer.name, kptr->name);
+    } else {
+        killer.format = KILLED_BY_AN;
+        killer.name[0] = 0; /* take the default */
+    }
+    dealloc_killer(kptr);
+
+    if ((m_idx = name_to_mon(killer.name)) >= LOW_PM) {
+        if (type_is_pname(&mons[m_idx])) {
+            killer.format = KILLED_BY;
+        } else if (mons[m_idx].geno & G_UNIQ) {
+            Strcpy(killer.name, the(killer.name));
+            killer.format = KILLED_BY;
+        }
+    }
+    u.usick_type = 0;
+    Sick = 0L;
+    done(POISONING);
+}
+
+/* fractioned properties, which once gained are getting stronger
+ * and usually results in player's death */
+struct strengted_prop {
+    int prop_id, resistance_id;
+    long inc_per_turn;
+    boolean hold_by_invulnerability;
+    void FDECL((*dialogue), (long));
+    void NDECL((*filled));
+} strengted_props[] = {
+    { SICK, SICK_RES, FULL_PROPERTY/32, TRUE, NULL, death_by_sickness },
+    { SLIMED, 0, FULL_PROPERTY/20+1, TRUE, slime_dialogue, death_by_sliming }
+};
+
+static
+void
+increase_prop_strenght(VOID_ARGS)
+{
+    for (struct strengted_prop *sp = strengted_props;
+         sp < strengted_props + SIZE(strengted_props);
+         ++sp)
+    {
+        long *prop = &u.uprops[sp->prop_id].intrinsic;
+        long strenght = prop_fraction(&u.uprops[sp->prop_id]);
+        long resistance = sp->resistance_id ? prop_fraction(&u.uprops[sp->resistance_id]) : 0;
+
+        if (!*prop || !strenght)
+            continue;
+        if (sp->hold_by_invulnerability && u.uinvulnerable)
+            continue;
+
+        if (Fraction_test(2L*strenght) && !Fraction_test(resistance))
+        {
+            long turns_left = (FULL_PROPERTY - strenght + sp->inc_per_turn-1)/sp->inc_per_turn;
+            if (sp->dialogue)
+                sp->dialogue(turns_left);
+            *prop = increased_fraction(*prop, sp->inc_per_turn);
+            if (sp->filled && (*prop & FRACTION) >= FULL_PROPERTY)
+                sp->filled();
+        }
     }
 }
 
@@ -327,7 +415,6 @@ nh_timeout()
     register struct prop *upp;
     struct kinfo *kptr;
     int sleeptime;
-    int m_idx;
     int baseluck = (flags.moonphase == FULL_MOON) ? 1 : 0;
 
     if (flags.friday13)
@@ -352,8 +439,6 @@ nh_timeout()
         return; /* things past this point could kill you */
     if (Stoned)
         stoned_dialogue();
-    if (Slimed)
-        slime_dialogue();
     if (Vomiting)
         vomiting_dialogue();
     if (Strangled)
@@ -386,6 +471,8 @@ nh_timeout()
             pline("%s stops galloping.", Monnam(u.usteed));
     }
 
+    increase_prop_strenght();
+
     for (upp = u.uprops; upp < u.uprops + SIZE(u.uprops); upp++)
         if ((upp->intrinsic & TIMEOUT) && !(--upp->intrinsic & TIMEOUT)) {
             kptr = find_delayed_killer((int) (upp - u.uprops));
@@ -402,43 +489,8 @@ nh_timeout()
                 /* (unlike sliming, you aren't changing form here) */
                 done(STONING);
                 break;
-            case SLIMED:
-                if (kptr && kptr->name[0]) {
-                    killer.format = kptr->format;
-                    Strcpy(killer.name, kptr->name);
-                } else {
-                    killer.format = NO_KILLER_PREFIX;
-                    Strcpy(killer.name, "turned into green slime");
-                }
-                dealloc_killer(kptr);
-                /* involuntarily break "never changed form" conduct */
-                u.uconduct.polyselfs++;
-                done(TURNED_SLIME);
-                break;
             case VOMITING:
                 make_vomiting(0L, TRUE);
-                break;
-            case SICK:
-                You("die from your illness.");
-                if (kptr && kptr->name[0]) {
-                    killer.format = kptr->format;
-                    Strcpy(killer.name, kptr->name);
-                } else {
-                    killer.format = KILLED_BY_AN;
-                    killer.name[0] = 0; /* take the default */
-                }
-                dealloc_killer(kptr);
-
-                if ((m_idx = name_to_mon(killer.name)) >= LOW_PM) {
-                    if (type_is_pname(&mons[m_idx])) {
-                        killer.format = KILLED_BY;
-                    } else if (mons[m_idx].geno & G_UNIQ) {
-                        Strcpy(killer.name, the(killer.name));
-                        killer.format = KILLED_BY;
-                    }
-                }
-                u.usick_type = 0;
-                done(POISONING);
                 break;
             case FAST:
                 if (!Very_fast)

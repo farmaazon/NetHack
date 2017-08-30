@@ -1668,7 +1668,7 @@ register struct attack *mattk;
             if (!Unchanging && pd == &mons[PM_GREEN_SLIME]) {
                 if (!Slimed) {
                     You("suck in some slime and don't feel very well.");
-                    make_slimed(10L, (char *) 0);
+                    make_slimed(FULL_PROPERTY/2, (char *) 0);
                 }
             }
             break;
@@ -1990,7 +1990,7 @@ register struct attack *mattk;
                         Sprintf(msgbuf, "%s isn't sitting well with you.",
                                 The(pd->mname));
                         if (!Unchanging) {
-                            make_slimed(5L, (char *) 0);
+                            make_slimed(3*FULL_PROPERTY/4, (char *) 0);
                         }
                     } else
                         exercise(A_CON, TRUE);
@@ -2350,8 +2350,9 @@ boolean wep_was_destroyed;
                 You("are splashed by %s %s!", s_suffix(mon_nam(mon)),
                     hliquid("acid"));
 
-            if (!Acid_resistance)
-                mdamageu(mon, tmp);
+            tmp = resist_dmg(tmp, ACID_RES);
+            u.utraining /= 4;
+            mdamageu(mon, tmp);
             if (!rn2(30))
                 erode_armor(&youmonst, ERODE_CORRODE);
         }
