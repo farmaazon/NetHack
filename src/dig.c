@@ -2025,7 +2025,7 @@ bury_you()
 
         u.uburied = TRUE;
         if (!Strangled && !Breathless)
-            Strangled = 6;
+            Strangled = FULL_PROPERTY/2;
         under_ground(1);
     }
 }

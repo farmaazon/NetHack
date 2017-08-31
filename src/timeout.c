@@ -5,9 +5,9 @@
 #include "hack.h"
 #include "lev.h" /* for checking save modes */
 
-STATIC_DCL void NDECL(stoned_dialogue);
-STATIC_DCL void NDECL(vomiting_dialogue);
-STATIC_DCL void NDECL(choke_dialogue);
+STATIC_DCL void FDECL(stoned_dialogue, (long));
+STATIC_DCL void FDECL(vomiting_dialogue, (long));
+STATIC_DCL void FDECL(choke_dialogue, (long));
 STATIC_DCL void NDECL(levitation_dialogue);
 STATIC_DCL void FDECL(slime_dialogue, (long));
 STATIC_DCL void NDECL(slip_or_trip);
@@ -104,9 +104,10 @@ static NEARDATA const char *const stoned_texts[] = {
 };
 
 STATIC_OVL void
-stoned_dialogue()
+stoned_dialogue(turns_left)
+long turns_left;
 {
-    register long i = (Stoned & TIMEOUT);
+    register long i = turns_left;
 
     if (i > 0L && i <= SIZE(stoned_texts)) {
         char buf[BUFSZ];
@@ -145,6 +146,24 @@ stoned_dialogue()
     exercise(A_DEX, FALSE);
 }
 
+STATIC_OVL void
+death_by_stoning(VOID_ARGS)
+{
+    struct kinfo *kptr = find_delayed_killer(STONED);
+    if (kptr && kptr->name[0]) {
+        killer.format = kptr->format;
+        Strcpy(killer.name, kptr->name);
+    } else {
+        killer.format = NO_KILLER_PREFIX;
+        Strcpy(killer.name, "killed by petrification");
+    }
+    dealloc_killer(kptr);
+    /* (unlike sliming, you aren't changing form here) */
+    done(STONING);
+    /* lifesaved; stop be a statue */
+    Stoned = 0L;
+}
+
 /* He is getting sicker and sicker prior to vomiting */
 static NEARDATA const char *const vomiting_texts[] = {
     "are feeling mildly nauseated.", /* 14 */
@@ -155,10 +174,11 @@ static NEARDATA const char *const vomiting_texts[] = {
 };
 
 STATIC_OVL void
-vomiting_dialogue()
+vomiting_dialogue(turns_left)
+long turns_left;
 {
     const char *txt = 0;
-    long v = (Vomiting & TIMEOUT);
+    long v = turns_left;
 
     /* note: nhtimeout() hasn't decremented timed properties for the
        current turn yet, so we use Vomiting-1 here */
@@ -190,18 +210,22 @@ vomiting_dialogue()
         if (cantvomit(youmonst.data))
             txt = "gag uncontrolably.";
         break;
-    case 0:
-        stop_occupation();
-        if (!cantvomit(youmonst.data))
-            morehungry(20);
-        vomit();
-        break;
     default:
         break;
     }
     if (txt)
         You1(txt);
     exercise(A_CON, FALSE);
+}
+
+STATIC_OVL void
+finally_vomit(VOID_ARGS)
+{
+    stop_occupation();
+    if (!cantvomit(youmonst.data))
+        morehungry(20);
+    vomit();
+    make_vomiting(0L, TRUE);
 }
 
 static NEARDATA const char *const choke_texts[] = {
@@ -221,9 +245,10 @@ static NEARDATA const char *const choke_texts2[] = {
 };
 
 STATIC_OVL void
-choke_dialogue()
+choke_dialogue(turns_left)
+long turns_left;
 {
-    register long i = (Strangled & TIMEOUT);
+    register long i = turns_left;
 
     if (i > 0 && i <= SIZE(choke_texts)) {
         if (Breathless || !rn2(50))
@@ -238,6 +263,22 @@ choke_dialogue()
         }
     }
     exercise(A_STR, FALSE);
+}
+
+STATIC_OVL void
+death_by_choking(VOID_ARGS)
+{
+    killer.format = KILLED_BY;
+    Strcpy(killer.name,
+           (u.uburied) ? "suffocation" : "strangulation");
+    done(DIED);
+    /* must be declining to die in explore|wizard mode;
+       treat like being cured of strangulation by prayer */
+    if (uamul && uamul->otyp == AMULET_OF_STRANGULATION) {
+        Your("amulet vanishes!");
+        useup(uamul);
+    }
+    Strangled = 0L;
 }
 
 static NEARDATA const char *const levi_texts[] = {
@@ -329,6 +370,8 @@ death_by_sliming(VOID_ARGS)
     /* involuntarily break "never changed form" conduct */
     u.uconduct.polyselfs++;
     done(TURNED_SLIME);
+    /* lifesafed; stop be a slime */
+    Slimed = 0L;
 }
 
 void
@@ -377,7 +420,10 @@ struct strengted_prop {
     void NDECL((*filled));
 } strengted_props[] = {
     { SICK, SICK_RES, FULL_PROPERTY/32, TRUE, NULL, death_by_sickness },
-    { SLIMED, 0, FULL_PROPERTY/20+1, TRUE, slime_dialogue, death_by_sliming }
+    { SLIMED, 0, FULL_PROPERTY/20+FRACTION_UNIT, TRUE, slime_dialogue, death_by_sliming },
+    { STONED, STONE_RES, FULL_PROPERTY/10+FRACTION_UNIT, TRUE, stoned_dialogue, death_by_stoning },
+    { STRANGLED, 0, FULL_PROPERTY/12+FRACTION_UNIT, TRUE, choke_dialogue, death_by_choking },
+    { VOMITING, 0, FULL_PROPERTY/64, TRUE, vomiting_dialogue, finally_vomit }
 };
 
 static
@@ -399,7 +445,7 @@ increase_prop_strenght(VOID_ARGS)
 
         if (Fraction_test(2L*strenght) && !Fraction_test(resistance))
         {
-            long turns_left = (FULL_PROPERTY - strenght + sp->inc_per_turn-1)/sp->inc_per_turn;
+            long turns_left = (FULL_PROPERTY - (*prop & FRACTION) + sp->inc_per_turn-1)/sp->inc_per_turn;
             if (sp->dialogue)
                 sp->dialogue(turns_left);
             *prop = increased_fraction(*prop, sp->inc_per_turn);
@@ -413,7 +459,6 @@ void
 nh_timeout()
 {
     register struct prop *upp;
-    struct kinfo *kptr;
     int sleeptime;
     int baseluck = (flags.moonphase == FULL_MOON) ? 1 : 0;
 
@@ -437,12 +482,6 @@ nh_timeout()
     }
     if (u.uinvulnerable)
         return; /* things past this point could kill you */
-    if (Stoned)
-        stoned_dialogue();
-    if (Vomiting)
-        vomiting_dialogue();
-    if (Strangled)
-        choke_dialogue();
     if (Levitation)
         levitation_dialogue();
     if (u.mtimedone && !--u.mtimedone) {
@@ -475,23 +514,7 @@ nh_timeout()
 
     for (upp = u.uprops; upp < u.uprops + SIZE(u.uprops); upp++)
         if ((upp->intrinsic & TIMEOUT) && !(--upp->intrinsic & TIMEOUT)) {
-            kptr = find_delayed_killer((int) (upp - u.uprops));
             switch (upp - u.uprops) {
-            case STONED:
-                if (kptr && kptr->name[0]) {
-                    killer.format = kptr->format;
-                    Strcpy(killer.name, kptr->name);
-                } else {
-                    killer.format = NO_KILLER_PREFIX;
-                    Strcpy(killer.name, "killed by petrification");
-                }
-                dealloc_killer(kptr);
-                /* (unlike sliming, you aren't changing form here) */
-                done(STONING);
-                break;
-            case VOMITING:
-                make_vomiting(0L, TRUE);
-                break;
             case FAST:
                 if (!Very_fast)
                     You_feel("yourself slowing down%s.",
@@ -560,18 +583,6 @@ nh_timeout()
                 break;
             case LEVITATION:
                 (void) float_down(I_SPECIAL | TIMEOUT, 0L);
-                break;
-            case STRANGLED:
-                killer.format = KILLED_BY;
-                Strcpy(killer.name,
-                       (u.uburied) ? "suffocation" : "strangulation");
-                done(DIED);
-                /* must be declining to die in explore|wizard mode;
-                   treat like being cured of strangulation by prayer */
-                if (uamul && uamul->otyp == AMULET_OF_STRANGULATION) {
-                    Your("amulet vanishes!");
-                    useup(uamul);
-                }
                 break;
             case FUMBLING:
                 /* call this only when a move took place.  */

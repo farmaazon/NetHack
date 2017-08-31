@@ -1252,7 +1252,7 @@ register struct attack *mattk;
                                 kname = the(kname);
                             kformat = KILLED_BY;
                         }
-                        make_stoned(5L, (char *) 0, kformat, kname);
+                        make_stoned(FULL_PROPERTY/2, (char *) 0, kformat, kname);
                         return 1;
                         /* done_in_by(mtmp, STONING); */
                     }

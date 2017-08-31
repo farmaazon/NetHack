@@ -178,8 +178,8 @@ const char *msg;
 
 /* start or stop petrification */
 void
-make_stoned(xtime, msg, killedby, killername)
-long xtime;
+make_stoned(strenght, msg, killedby, killername)
+long strenght;
 const char *msg;
 int killedby;
 const char *killername;
@@ -190,8 +190,8 @@ const char *killername;
     if (Unaware)
         msg = 0;
 #endif
-    set_itimeout(&Stoned, xtime);
-    if ((xtime != 0L) ^ (old != 0L)) {
+    set_fraction(&Stoned, strenght);
+    if ((strenght != 0L) ^ (old != 0L)) {
         context.botl = TRUE;
         if (msg)
             pline1(msg);
@@ -203,8 +203,8 @@ const char *killername;
 }
 
 void
-make_vomiting(xtime, talk)
-long xtime;
+make_vomiting(strenght, talk)
+long strenght;
 boolean talk;
 {
     long old = Vomiting;
@@ -212,9 +212,9 @@ boolean talk;
     if (Unaware)
         talk = FALSE;
 
-    set_itimeout(&Vomiting, xtime);
+    set_fraction(&Vomiting, strenght);
     context.botl = TRUE;
-    if (!xtime && old)
+    if (!strenght && old)
         if (talk)
             You_feel("much less nauseated now.");
 }

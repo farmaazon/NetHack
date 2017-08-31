@@ -65,7 +65,8 @@
 
 #define HStone_resistance u.uprops[STONE_RES].intrinsic
 #define EStone_resistance u.uprops[STONE_RES].extrinsic
-#define Stone_resistance (HStone_resistance || EStone_resistance)
+#define FStone_resistance prop_fraction(&u.uprops[STONE_RES])
+#define Stone_resistance (FStone_resistance >= FULL_PROPERTY)
 
 /* Intrinsics only */
 #define HSick_resistance u.uprops[SICK_RES].intrinsic

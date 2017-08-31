@@ -1243,14 +1243,14 @@ wiz_intrinsic(VOID_ARGS)
             case STONED:
                 Sprintf(buf, fmt,
                         !Stoned ? "" : " still", "turning into stone");
-                make_stoned(newtimeout, buf, KILLED_BY, wizintrinsic);
+                make_stoned(FULL_PROPERTY/2, buf, KILLED_BY, wizintrinsic);
                 break;
             case STUNNED:
                 make_stunned(newtimeout, TRUE);
                 break;
             case VOMITING:
                 Sprintf(buf, fmt, !Vomiting ? "" : " still", "vomiting");
-                make_vomiting(newtimeout, FALSE);
+                make_vomiting(FULL_PROPERTY/2, FALSE);
                 pline1(buf);
                 break;
             default:
@@ -1908,16 +1908,16 @@ int final;
 
     /* internal troubles, mostly in the order that prayer ranks them */
     if (Stoned)
-        you_are("turning to stone", "");
+        you_are((Stoned & FRACTION) < FULL_PROPERTY ? "turning to stone" : "turned to stone", property_percents(STONED));
     if (Slimed)
-        you_are("turning into slime", "");
+        you_are((Slimed & FRACTION) < FULL_PROPERTY ? "turning into slime" : "turned into slime", property_percents(SLIMED));
     if (Strangled) {
         if (u.uburied) {
-            you_are("buried", "");
+            you_are("buried", property_percents(STRANGLED));
         } else {
-            Strcpy(buf, "being strangled");
+            Strcpy(buf, (Strangled & FRACTION) < FULL_PROPERTY ? "being strangled" : "strangled to death");
             if (wizard)
-                Sprintf(eos(buf), " (%ld)", (Strangled & TIMEOUT));
+                Sprintf(eos(buf), " %s", property_percents(STRANGLED));
             you_are(buf, from_what(STRANGLED));
         }
     }
@@ -1929,7 +1929,7 @@ int final;
             you_are("terminally sick from food poisoning", property_percents(SICK));
     }
     if (Vomiting)
-        you_are("nauseated", "");
+        you_are("nauseated", property_percents(VOMITING));
     if (Stunned)
         you_are("stunned", "");
     if (Confusion)

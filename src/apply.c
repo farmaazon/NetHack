@@ -1912,7 +1912,7 @@ struct obj *obj;
         prop_trouble(BLINDED);
     if (TimedTrouble(HHallucination))
         prop_trouble(HALLUC);
-    if (TimedTrouble(Vomiting))
+    if (StrengtenedTrouble(Vomiting))
         prop_trouble(VOMITING);
     if (TimedTrouble(HConfusion))
         prop_trouble(CONFUSION);

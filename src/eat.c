@@ -514,7 +514,7 @@ int *dmg_p; /* for dishing out extra damage in lieu of Int loss */
            tentacle-touch should have been caught before reaching this far) */
         if (magr == &youmonst) {
             if (!Stone_resistance && !Stoned)
-                make_stoned(5L, (char *) 0, KILLED_BY_AN, pd->mname);
+                make_stoned(FULL_PROPERTY/2, (char *) 0, KILLED_BY_AN, pd->mname);
         } else {
             /* no need to check for poly_when_stoned or Stone_resistance;
                mind flayers don't have those capabilities */
@@ -1345,7 +1345,7 @@ const char *mesg;
         tin = costly_tin(COST_OPEN);
 
         if (tintxts[r].nut < 0) /* rotten */
-            make_vomiting((long) rn1(15, 10), FALSE);
+            make_vomiting((long) rn1(15, 40)*FULL_PROPERTY/64, FALSE);
         else
             lesshungry(tintxts[r].nut);
 
@@ -1778,7 +1778,7 @@ struct obj *otmp;
             /* not cannibalism, but we use similar criteria
                for deciding whether to be sickened by this meal */
             if (rn2(2) && !CANNIBAL_ALLOWED())
-                make_vomiting((long) rn1(context.victual.reqtime, 14), FALSE);
+                make_vomiting((long)(50 - rn2(context.victual.reqtime))*FULL_PROPERTY/64, FALSE);
         }
         break;
     case LEMBAS_WAFER:
@@ -1797,7 +1797,7 @@ struct obj *otmp;
         goto give_feedback;
     case CLOVE_OF_GARLIC:
         if (is_undead(youmonst.data)) {
-            make_vomiting((long) rn1(context.victual.reqtime, 5), FALSE);
+            make_vomiting((long)(60 - rn2(context.victual.reqtime)*FULL_PROPERTY/64), FALSE);
             break;
         }
         /* else FALLTHRU */
@@ -1841,7 +1841,7 @@ struct obj *otmp;
             /* increasing existing nausea means that it will take longer
                before eventual vomit, but also means that constitution
                will be abused more times before illness completes */
-            make_vomiting((Vomiting & TIMEOUT) + (long) d(10, 4), TRUE);
+            make_vomiting(((Vomiting & FRACTION)+1L)/2L, TRUE);
         } else {
         give_feedback:
             pline("This %s is %s", singular(otmp, xname),
@@ -2195,7 +2195,7 @@ struct obj *otmp;
                 if (!Stoned) {
                     Sprintf(killer.name, "%s egg",
                             mons[otmp->corpsenm].mname);
-                    make_stoned(5L, (char *) 0, KILLED_BY_AN, killer.name);
+                    make_stoned(FULL_PROPERTY/2, (char *) 0, KILLED_BY_AN, killer.name);
                 }
             }
             /* note: no "tastes like chicken" message for eggs */

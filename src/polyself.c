@@ -136,7 +136,7 @@ boolean on;
            vulnerable form into another causes the counter to be reset */
         if (uamul && uamul->otyp == AMULET_OF_STRANGULATION
             && can_be_strangled(&youmonst)) {
-            Strangled = 6L;
+            Strangled = FULL_PROPERTY/2;
             context.botl = TRUE;
             Your("%s %s your %s!", simpleonames(uamul),
                  Strangled ? "still constricts" : "begins constricting",
