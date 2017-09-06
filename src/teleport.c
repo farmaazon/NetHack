@@ -378,7 +378,7 @@ vault_tele()
         teleds(c.x, c.y, FALSE);
         return;
     }
-    tele();
+    tele(NULL);
 }
 
 boolean
@@ -412,9 +412,10 @@ boolean force_it;
 
 /* teleport the hero via some method other than scroll of teleport */
 void
-tele()
+tele(controlled)
+boolean *controlled;
 {
-    (void) scrolltele((struct obj *) 0);
+    (void) scrolltele((struct obj *) 0, controlled);
 }
 
 /* teleport the hero; return true if scroll of teleportation should become
@@ -422,11 +423,15 @@ tele()
    outcome sometimes depends upon destination and discovery needs to be
    performed before arrival, in case we land on another teleport scroll */
 boolean
-scrolltele(scroll)
+scrolltele(scroll, controlled)
 struct obj *scroll;
+boolean *controlled;
 {
     coord cc;
+    boolean controlled_buf = FALSE;
     boolean result = FALSE; /* don't learn scroll */
+    if (!controlled)
+        controlled = &controlled_buf;
 
     /* Disable teleportation in stronghold && Vlad's Tower */
     if (level.flags.noteleport) {
@@ -445,7 +450,9 @@ struct obj *scroll;
         if (!wizard || yn("Override?") != 'y')
             return FALSE;
     }
-    if ((Teleport_control && !Stunned) || wizard) {
+
+    *controlled = (Fraction_test(FTeleport_control) && !Stunned);
+    if (*controlled || wizard) {
         if (unconscious()) {
             pline("Being unconscious, you cannot control your teleport.");
         } else {
@@ -459,6 +466,7 @@ struct obj *scroll;
             cc.y = u.uy;
             if (getpos(&cc, TRUE, "the desired position") < 0)
                 return TRUE; /* abort */
+            train_prop(u.ulevel*5, &u.uprops[TELEPORT_CONTROL]);
             /* possible extensions: introduce a small error if
                magic power is low; allow transfer to solid rock */
             if (teleok(cc.x, cc.y, FALSE)) {
@@ -569,6 +577,10 @@ dotele()
         } else {
             u.uen -= energy;
             context.botl = 1;
+            if (!Fraction_test(FTeleportation) && /*!wizard &&*/ !trap) {
+                You("failed to teleport");
+                return 1;
+            }
         }
     }
 
@@ -576,14 +588,16 @@ dotele()
         if (trap && trap_once)
             vault_tele();
         else
-            tele();
+            tele(NULL);
         (void) next_to_u();
     } else {
         You1(shudder_for_moment);
         return 0;
     }
-    if (!trap)
+    if (!trap) {
+        train_prop(100, &u.uprops[TELEPORT]);
         morehungry(100);
+    }
     return 1;
 }
 
@@ -601,7 +615,7 @@ level_tele()
         You_feel("very disoriented for a moment.");
         return;
     }
-    if ((Teleport_control && !Stunned) || wizard) {
+    if ((Fraction_test(FTeleport_control) && !Stunned) || wizard) {
         char qbuf[BUFSZ];
         int trycnt = 0;
 
@@ -694,6 +708,8 @@ level_tele()
          */
         if (In_quest(&u.uz) && newlev > 0)
             newlev = newlev + dungeons[u.uz.dnum].depth_start - 1;
+
+        train_prop(6*u.ulevel, &u.uprops[TELEPORT_CONTROL]);
     } else { /* involuntary level tele */
     random_levtport:
         newlev = random_teleport_level();
@@ -868,7 +884,7 @@ struct trap *trap;
         newsym(u.ux, u.uy); /* get rid of trap symbol */
         vault_tele();
     } else
-        tele();
+        tele(NULL);
 }
 
 void
@@ -1024,7 +1040,7 @@ boolean suppress_impossible;
     register int x, y, trycount;
 
     if (mtmp == u.usteed) {
-        tele();
+        tele(NULL);
         return TRUE;
     }
 

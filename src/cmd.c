@@ -2313,9 +2313,12 @@ int final;
     if (Jumping)
         you_can("jump", from_what(JUMPING));
     if (Teleportation)
-        you_can("teleport", from_what(TELEPORT));
-    if (Teleport_control)
-        you_have("teleport control", from_what(TELEPORT_CONTROL));
+        you_can("teleport", property_percents(TELEPORT));
+    Inform_about_fraction(FTeleport_control,,
+                          you_can("sometimes control your teleportation", property_percents(TELEPORT_CONTROL)),
+                          you_have("teleport control", property_percents(TELEPORT_CONTROL)),
+                          you_have("full teleport control", property_percents(TELEPORT_CONTROL)),
+                          you_have("full teleport control", property_percents(TELEPORT_CONTROL)));
     /* actively levitating handled earlier as a status condition */
     if (BLevitation) { /* levitation is blocked */
         long save_BLev = BLevitation;

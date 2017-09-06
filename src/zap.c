@@ -2368,12 +2368,15 @@ boolean ordinary;
 
     case WAN_TELEPORTATION:
     case SPE_TELEPORT_AWAY:
-        tele();
+        {
+            boolean controlled = FALSE;
+            tele(&controlled);
         /* same criteria as when mounted (zap_steed) */
-        if ((Teleport_control && !Stunned) || !couldsee(u.ux0, u.uy0)
-            || distu(u.ux0, u.uy0) >= 16)
-            learn_it = TRUE;
+            if (controlled || !couldsee(u.ux0, u.uy0)
+                || distu(u.ux0, u.uy0) >= 16)
+                learn_it = TRUE;
         break;
+        }
 
     case WAN_DEATH:
     case SPE_FINGER_OF_DEATH:
@@ -2595,14 +2598,17 @@ struct obj *obj; /* wand or spell */
         break;
     case WAN_TELEPORTATION:
     case SPE_TELEPORT_AWAY:
-        /* you go together */
-        tele();
-        /* same criteria as when unmounted (zapyourself) */
-        if ((Teleport_control && !Stunned) || !couldsee(u.ux0, u.uy0)
-            || distu(u.ux0, u.uy0) >= 16)
-            learnwand(obj);
-        steedhit = TRUE;
-        break;
+        {
+            boolean controlled = FALSE;
+            /* you go together */
+            tele(&controlled);
+            /* same criteria as when unmounted (zapyourself) */
+            if (controlled || !couldsee(u.ux0, u.uy0)
+                || distu(u.ux0, u.uy0) >= 16)
+                learnwand(obj);
+            steedhit = TRUE;
+            break;
+        }
 
     /* Default processing via bhitm() for these */
     case SPE_CURE_SICKNESS:

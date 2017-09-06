@@ -209,10 +209,12 @@
 #define HTeleportation u.uprops[TELEPORT].intrinsic
 #define ETeleportation u.uprops[TELEPORT].extrinsic
 #define Teleportation (HTeleportation || ETeleportation)
+#define FTeleportation prop_fraction(&u.uprops[TELEPORT])
 
 #define HTeleport_control u.uprops[TELEPORT_CONTROL].intrinsic
 #define ETeleport_control u.uprops[TELEPORT_CONTROL].extrinsic
-#define Teleport_control (HTeleport_control || ETeleport_control)
+//#define Teleport_control (HTeleport_control || ETeleport_control)
+#define FTeleport_control prop_fraction(&u.uprops[TELEPORT_CONTROL])
 
 #define HLevitation u.uprops[LEVITATION].intrinsic
 #define ELevitation u.uprops[LEVITATION].extrinsic

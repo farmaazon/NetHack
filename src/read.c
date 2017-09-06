@@ -1429,7 +1429,7 @@ struct obj *sobj; /* scroll, or fake spellbook object for scroll-like spell */
         if (confused || scursed) {
             level_tele();
         } else {
-            known = scrolltele(sobj);
+            known = scrolltele(sobj, NULL);
         }
         break;
     case SCR_GOLD_DETECTION:

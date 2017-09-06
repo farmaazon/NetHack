@@ -2325,8 +2325,8 @@ E boolean FDECL(enexto_core, (coord *, XCHAR_P, XCHAR_P,
 E void FDECL(teleds, (int, int, BOOLEAN_P));
 E boolean FDECL(safe_teleds, (BOOLEAN_P));
 E boolean FDECL(teleport_pet, (struct monst *, BOOLEAN_P));
-E void NDECL(tele);
-E boolean FDECL(scrolltele, (struct obj *));
+E void FDECL(tele, (boolean *));
+E boolean FDECL(scrolltele, (struct obj *, boolean *));
 E int NDECL(dotele);
 E void NDECL(level_tele);
 E void FDECL(domagicportal, (struct trap *));

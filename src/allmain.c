@@ -233,7 +233,8 @@ boolean resuming;
                     }
 
                     if (!u.uinvulnerable) {
-                        if (Teleportation && !rn2(85)) {
+                        if ((Fraction_test(FTeleportation) && !rn2(85)) ||
+                                (Fraction_test(increased_fraction(FTeleportation, -FULL_PROPERTY)) && !rn2(40))) {
                             xchar old_ux = u.ux, old_uy = u.uy;
                             tele();
                             if (u.ux != old_ux || u.uy != old_uy) {

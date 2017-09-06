@@ -3634,7 +3634,7 @@ drown()
         return FALSE;
     }
     if ((Teleportation || can_teleport(youmonst.data)) && !Unaware
-        && (Teleport_control || rn2(3) < Luck + 2)) {
+        && (Fraction_test(FTeleport_control) || rn2(3) < Luck + 2)) {
         You("attempt a teleport spell."); /* utcsri!carroll */
         if (!level.flags.noteleport) {
             (void) dotele();
