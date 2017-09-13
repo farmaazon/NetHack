@@ -236,7 +236,7 @@ boolean resuming;
                         if ((Fraction_test(FTeleportation) && !rn2(85)) ||
                                 (Fraction_test(increased_fraction(FTeleportation, -FULL_PROPERTY)) && !rn2(40))) {
                             xchar old_ux = u.ux, old_uy = u.uy;
-                            tele();
+                            tele(NULL);
                             if (u.ux != old_ux || u.uy != old_uy) {
                                 if (!next_to_u()) {
                                     check_leash(old_ux, old_uy);

@@ -355,7 +355,8 @@
 
 #define HReflecting u.uprops[REFLECTING].intrinsic
 #define EReflecting u.uprops[REFLECTING].extrinsic
-#define Reflecting (HReflecting || EReflecting)
+//#define Reflecting (HReflecting || EReflecting)
+#define FReflecting prop_fraction(&u.uprops[REFLECTING])
 
 #define Free_action u.uprops[FREE_ACTION].extrinsic /* [Tom] */
 

@@ -1059,7 +1059,7 @@ find_offensive(mtmp)
 struct monst *mtmp;
 {
     register struct obj *obj;
-    boolean reflection_skip = (Reflecting && rn2(2));
+    boolean reflection_skip = (Fraction_test(FReflecting) && rn2(2));
     struct obj *helmet = which_armor(mtmp, W_ARMH);
 
     m.offensive = (struct obj *) 0;
@@ -1237,7 +1237,7 @@ register struct obj *otmp;
         if (mtmp == &youmonst) {
             if (zap_oseen)
                 makeknown(WAN_TELEPORTATION);
-            tele();
+            tele(NULL);
         } else {
             /* for consistency with zap.c, don't identify */
             if (mtmp->ispriest && *in_rooms(mtmp->mx, mtmp->my, TEMPLE)) {
@@ -2130,31 +2130,36 @@ boolean
 ureflects(fmt, str)
 const char *fmt, *str;
 {
+    long reflect_roll = (long)rn2(FULL_PROPERTY/FRACTION_UNIT) * FRACTION_UNIT;
     /* Check from outermost to innermost objects */
-    if (EReflecting & W_ARMS) {
-        if (fmt && str) {
+    if (EReflecting & W_ARMS && reflect_roll < FULL_PROPERTY/2) {
+        if (fmt && str && !Blind) {
             pline(fmt, str, "shield");
             makeknown(SHIELD_OF_REFLECTION);
         }
         return TRUE;
-    } else if (EReflecting & W_WEP) {
+    } else if (EReflecting & W_WEP && reflect_roll < FULL_PROPERTY/2) {
         /* Due to wielded artifact weapon */
-        if (fmt && str)
+        if (fmt && str && !Blind)
             pline(fmt, str, "weapon");
         return TRUE;
-    } else if (EReflecting & W_AMUL) {
-        if (fmt && str) {
+    } else if (EReflecting & W_AMUL && reflect_roll < FULL_PROPERTY/2) {
+        if (fmt && str && !Blind) {
             pline(fmt, str, "medallion");
             makeknown(AMULET_OF_REFLECTION);
         }
         return TRUE;
-    } else if (EReflecting & W_ARM) {
-        if (fmt && str)
+    } else if (EReflecting & W_ARM && reflect_roll < 7*FULL_PROPERTY/8) {
+        if (fmt && str && !Blind)
             pline(fmt, str, uskin ? "luster" : "armor");
         return TRUE;
     } else if (youmonst.data == &mons[PM_SILVER_DRAGON]) {
-        if (fmt && str)
+        if (fmt && str && !Blind)
             pline(fmt, str, "scales");
+        return TRUE;
+    } else if (reflect_roll < FReflecting){
+        if (fmt && str && !Blind)
+            pline(fmt, str, "skin");
         return TRUE;
     }
     return FALSE;

@@ -254,7 +254,7 @@ dosit()
                     aggravate();
                 } else {
                     You_feel("a wrenching sensation.");
-                    tele(); /* teleport him */
+                    tele(NULL); /* teleport him */
                 }
                 break;
             case 12:

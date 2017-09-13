@@ -547,12 +547,10 @@ aligntyp resp_god;
             pline("%s seems unaffected.", Monnam(u.ustuck));
     } else {
         pline("Suddenly, a bolt of lightning strikes you!");
-        if (Reflecting) {
+        if (ureflects("%s reflects from your %s.", "It")) {
             shieldeff(u.ux, u.uy);
             if (Blind)
                 pline("For some reason you're unaffected.");
-            else
-                (void) ureflects("%s reflects from your %s.", "It");
         } else if (FShock_resistance == FULL_PROPERTY) {
             shieldeff(u.ux, u.uy);
             pline("It seems not to affect you.");

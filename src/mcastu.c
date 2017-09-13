@@ -548,6 +548,8 @@ int spellnum;
         if (reflects) {
             shieldeff(u.ux, u.uy);
             dmg = 0;
+            if (!Blind)
+                pline("For some reason you're unaffected.");
             break;
         }
         if (FShock_resistance > FULL_PROPERTY/2)

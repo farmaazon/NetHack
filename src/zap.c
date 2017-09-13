@@ -4091,12 +4091,10 @@ boolean say; /* Announce out of sight hit/miss events if true */
             } else if (zap_hit((int) u.uac, 0)) {
                 range -= 2;
                 pline("%s hits you!", The(fltxt));
-                if (Reflecting) {
-                    if (!Blind) {
-                        (void) ureflects("But %s reflects from your %s!",
-                                         "it");
-                    } else
+                if (ureflects("But %s reflects from your %s!", "it")) {
+                    if (Blind) {
                         pline("For some reason you are not affected.");
+                    }
                     dx = -dx;
                     dy = -dy;
                     shieldeff(sx, sy);
