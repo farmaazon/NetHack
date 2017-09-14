@@ -2120,7 +2120,7 @@ register struct attack *mattk;
                       : "gazes ineffectually");
             break;
         }
-        if (ureflects("%s gaze is reflected by your %s.", s_suffix(Monnam(mtmp)))
+        if (ureflects("%s gaze is reflected by your %s.", s_suffix(Monnam(mtmp)), 0)
                 && couldsee(mtmp->mx, mtmp->my)
                 && mtmp->data == &mons[PM_MEDUSA]) {
             /* hero has line of sight to Medusa and she's not blind */

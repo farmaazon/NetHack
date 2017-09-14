@@ -2127,12 +2127,17 @@ const char *str;
 }
 
 boolean
-ureflects(fmt, str)
+ureflects(fmt, str, always_reflects)
 const char *fmt, *str;
+long always_reflects;
 {
     long reflect_roll = (long)rn2(FULL_PROPERTY/FRACTION_UNIT) * FRACTION_UNIT;
+
+    if (EReflecting & always_reflects)
+        reflect_roll = 0;
+
     /* Check from outermost to innermost objects */
-    if (EReflecting & W_ARMS && reflect_roll < FULL_PROPERTY/2) {
+    if (EReflecting & W_ARMS && (reflect_roll < FULL_PROPERTY/2)) {
         if (fmt && str && !Blind) {
             pline(fmt, str, "shield");
             makeknown(SHIELD_OF_REFLECTION);

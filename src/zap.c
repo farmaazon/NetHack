@@ -3690,13 +3690,20 @@ xchar sx, sy;
         break;
     case ZT_DEATH:
         if (abstyp == ZT_BREATH(ZT_DEATH)) {
+            int i;
             /* this flag will remain false until something will be disintegrated
                (you or your gear) */
             boolean disintegrated = !Fraction_test(FDisint_resistance);
 
             if (disintegrated && uarms) {
+
                 /* try to destroy shield; other possessions are safe */
-                if ((disintegrated = !Fraction_test(FDisint_resistance)))
+
+                /* enchanted shield gives more opportunities to resist */
+                for (i = 0; i < uarms->spe; ++i)
+                    if (!(disintegrated = !Fraction_test(FDisint_resistance)))
+                        break;
+                if (disintegrated)
                 {
                     (void) destroy_arm(uarms);
                     break;
@@ -3705,10 +3712,20 @@ xchar sx, sy;
             if (disintegrated && uarm) {
                 /* destroy suit; if present, cloak goes too */
                 /* each of these items give chance of persisting */
-                if (uarmc && (disintegrated = !Fraction_test(FDisint_resistance)))
-                    (void) destroy_arm(uarmc);
+                if (uarmc) {
+                    for (i = 0; i < uarmc->spe; ++i)
+                        if (!(disintegrated = !Fraction_test(FDisint_resistance)))
+                            break;
+                    if (disintegrated)
+                        (void) destroy_arm(uarmc);
+                }
                 /* still disintegration is unresisted? */
-                if (disintegrated && (disintegrated = !Fraction_test(FDisint_resistance)))
+                for (i = 0; i < uarmc->spe; ++i) {
+                    if (!disintegrated)
+                        break;
+                    disintegrated = Fraction_test(FDisint_resistance);
+                }
+                if (disintegrated)
                 {
                     (void) destroy_arm(uarm);
                     break;
@@ -4089,9 +4106,12 @@ boolean say; /* Announce out of sight hit/miss events if true */
                 mon = u.usteed;
                 goto buzzmonst;
             } else if (zap_hit((int) u.uac, 0)) {
+                long always_reflects = 0;
+                if (abs(type) == ZT_BREATH(AD_DISN))
+                    always_reflects = W_ARMS | (!uarms && !uarmc ? W_ARM : 0);
                 range -= 2;
                 pline("%s hits you!", The(fltxt));
-                if (ureflects("But %s reflects from your %s!", "it")) {
+                if (ureflects("But %s reflects from your %s!", "it", always_reflects)) {
                     if (Blind) {
                         pline("For some reason you are not affected.");
                     }

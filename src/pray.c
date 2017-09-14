@@ -547,7 +547,7 @@ aligntyp resp_god;
             pline("%s seems unaffected.", Monnam(u.ustuck));
     } else {
         pline("Suddenly, a bolt of lightning strikes you!");
-        if (ureflects("%s reflects from your %s.", "It")) {
+        if (ureflects("%s reflects from your %s.", "It", 0)) {
             shieldeff(u.ux, u.uy);
             if (Blind)
                 pline("For some reason you're unaffected.");

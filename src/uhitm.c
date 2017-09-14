@@ -2453,7 +2453,7 @@ boolean wep_was_destroyed;
                 }
                 if (mon->mcansee) {
                     if (ureflects("%s gaze is reflected by your %s.",
-                                  s_suffix(Monnam(mon)))) {
+                                  s_suffix(Monnam(mon)), 0)) {
                         ;
                     } else if (Free_action) {
                         You("momentarily stiffen under %s gaze!",
